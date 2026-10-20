@@ -2,7 +2,8 @@
 import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 
-const fallbackEvents = [
+type ProgramEvent = {date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string};
+const fallbackEvents: ProgramEvent[] = [
   { date: "EM BREVE", month: "—", type: "MÚSICA", title: "Novos encontros, novas histórias", desc: "A próxima programação está a ser preparada. Fique atento às novidades.", tag: "Em atualização" },
   { date: "EM BREVE", month: "—", type: "ARTES PERFORMATIVAS", title: "O palco está à sua espera", desc: "Espetáculos, criação contemporânea e momentos para partilhar.", tag: "Em atualização" },
   { date: "EM BREVE", month: "—", type: "COMUNIDADE", title: "Cultura feita em conjunto", desc: "Atividades e iniciativas que aproximam pessoas através da cultura.", tag: "Em atualização" },
@@ -16,21 +17,21 @@ export default function Home() {
   const [newsState, setNewsState] = useState("");
   const [contactState, setContactState] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
-  const [events, setEvents] = useState(fallbackEvents);
+  const [events, setEvents] = useState<ProgramEvent[]>(fallbackEvents);
   const [content, setContent] = useState<Record<string,{title:string;body:string}>>({});
   const [settings, setSettings] = useState<Record<string,string>>({});
   useEffect(() => {
     let active = true;
     try {
       const db = supabaseBrowser();
-      void db.from("events").select("title,category,description,starts_at,ticket_url")
+      void db.from("events").select("title,category,description,starts_at,ticket_url,image_url")
         .eq("status","published").order("starts_at",{ascending:true}).then(({data,error}) => {
           if (!active || error || !data || !data.length) return;
           setEvents(data.map(ev => ({
             date: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{day:"2-digit"}) : "EM BREVE",
             month: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{month:"short",year:"numeric"}).toUpperCase() : "—",
             type: ev.category.toUpperCase(), title:ev.title,desc:ev.description,tag:ev.starts_at?"Confirmado":"Em breve",
-            ticket_url:ev.ticket_url || ""
+            ticket_url:ev.ticket_url || "", image_url:ev.image_url || ""
           })));
         });
       void db.from("site_content").select("key,title,body").then(({data}) => {
@@ -95,7 +96,7 @@ export default function Home() {
     <section className="intro section-pad"><div className="section-kicker"><span>01 / A CASA</span><span>MAIS DO QUE UM ESPAÇO</span></div><div className="intro-grid"><h2>{content.intro?.title || <>Um ponto de encontro.<br/><em>Mil possibilidades.</em></>}</h2><div className="intro-text"><p>{content.intro?.body || "Acreditamos na cultura como lugar de descoberta, partilha e transformação. Um espaço para ver, ouvir, pensar e sentir — em conjunto."}</p><a className="text-link" href="#contacto">Venha conhecer-nos <span>↗</span></a></div></div></section>
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
-      <div className="event-list">{events.map((ev, i) => <article className="event" key={i}><div className="event-number">0{i+1}</div><div className="event-date"><strong>{ev.date}</strong><span>{ev.month}</span></div><div className="event-main"><span className="event-type">{ev.type}</span><h3>{ev.title}</h3><p>{ev.desc}</p></div><div className="event-action"><span className="status">{ev.tag}</span>{"ticket_url" in ev && ev.ticket_url ? <a className="event-arrow" href={String(ev.ticket_url)} target="_blank" rel="noopener noreferrer" aria-label={"Bilhetes para "+ev.title}>↗</a> : <span className="event-arrow">↗</span>}</div></article>)}</div>
+      <div className="event-list">{events.map((ev, i) => <article className="event" key={i}><div className="event-number">0{i+1}</div><div className="event-date"><strong>{ev.date}</strong><span>{ev.month}</span></div>{ev.image_url && <div className="event-poster"><img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /></div>}<div className="event-main"><span className="event-type">{ev.type}</span><h3>{ev.title}</h3><p>{ev.desc}</p></div><div className="event-action"><span className="status">{ev.tag}</span>{"ticket_url" in ev && ev.ticket_url ? <a className="event-arrow" href={String(ev.ticket_url)} target="_blank" rel="noopener noreferrer" aria-label={"Bilhetes para "+ev.title}>↗</a> : <span className="event-arrow">↗</span>}</div></article>)}</div>
       <p className="editor-note">A agenda será atualizada com eventos e datas confirmados.</p>
     </section>
 
