@@ -6,7 +6,7 @@ import "./admin.css";
 
 type Tab = "events" | "site_content" | "site_settings" | "contact_messages" | "newsletter_subscribers";
 type Item = { id: string; [key: string]: any };
-const categories = ["Cinema", "Música", "Humor", "Exposição", "Concerto", "Conferência", "Palestra"];
+const categories = ["Cinema", "Música", "Teatro", "Humor", "Exposição", "Concerto", "Conferência", "Palestra"];
 const tabs: { id: Tab; label: string; icon: string }[] = [
   { id: "events", label: "Programação", icon: "◈" },
   { id: "site_content", label: "Conteúdos", icon: "▤" },
