@@ -1,39 +1,139 @@
 "use client";
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { supabaseBrowser } from "../../lib/supabase-browser";
 import type { SupabaseClient } from "@supabase/supabase-js";
-type Tab = "events"|"site_content"|"site_settings"|"contact_messages"|"newsletter_subscribers";
-type Item = {id:string;[key:string]:any};
-const tabs: {id:Tab;label:string}[] = [{id:"events",label:"Programação"},{id:"site_content",label:"Conteúdos"},{id:"site_settings",label:"Definições"},{id:"contact_messages",label:"Mensagens"},{id:"newsletter_subscribers",label:"Newsletter"}];
-const emptyEvent = {title:"",category:"Música",description:"",starts_at:"",location:"Casa da Cultura César Oliveira",image_url:"",ticket_url:"",status:"draft"};
+import "./admin.css";
+
+type Tab = "events" | "site_content" | "site_settings" | "contact_messages" | "newsletter_subscribers";
+type Item = { id: string; [key: string]: any };
+const categories = ["Cinema", "Música", "Humor", "Exposição", "Concerto", "Conferência", "Palestra"];
+const tabs: { id: Tab; label: string; icon: string }[] = [
+  { id: "events", label: "Programação", icon: "◈" },
+  { id: "site_content", label: "Conteúdos", icon: "▤" },
+  { id: "site_settings", label: "Definições", icon: "⚙" },
+  { id: "contact_messages", label: "Mensagens", icon: "✉" },
+  { id: "newsletter_subscribers", label: "Newsletter", icon: "◎" },
+];
+const emptyEvent = { title: "", category: "Música", description: "", starts_at: "", location: "Casa da Cultura César Oliveira", image_url: "", ticket_url: "", status: "draft" };
+const editableTabs: Tab[] = ["events", "site_content", "site_settings"];
+
 export default function Admin() {
- const [db,setDb]=useState<SupabaseClient|null>(null),[user,setUser]=useState<string|null>(null),[authorized,setAuthorized]=useState(false),[email,setEmail]=useState(""),[password,setPassword]=useState(""),[tab,setTab]=useState<Tab>("events"),[rows,setRows]=useState<Item[]>([]),[edit,setEdit]=useState<Item|null>(null),[form,setForm]=useState<any>(emptyEvent),[error,setError]=useState(""),[busy,setBusy]=useState(false);
- useEffect(()=>{try{const c=supabaseBrowser();setDb(c);c.auth.getUser().then(({data})=>setUser(data.user?.id||null));const {data:{subscription}}=c.auth.onAuthStateChange((_e,s)=>setUser(s?.user?.id||null));return ()=>subscription.unsubscribe()}catch(e){setError(String(e))}},[]);
- useEffect(()=>{if(!db||!user){setAuthorized(false);setRows([]);return}let active=true;db.from("admin_users").select("user_id").eq("user_id",user).maybeSingle().then(({data,error})=>{if(active){setAuthorized(!!data&&!error);if(error)setError(error.message)}});return()=>{active=false}},[db,user]);
- useEffect(()=>{if(db&&authorized)void load()},[db,authorized,tab]);
- async function load(){if(!db)return;const {data,error}=await db.from(tab).select("*").order("created_at",{ascending:false});if(error)setError(error.message);else setRows(data||[])}
- async function login(e:FormEvent){e.preventDefault();if(!db)return;setBusy(true);const {error}=await db.auth.signInWithPassword({email,password});setError(error?.message||"");setBusy(false)}
- function begin(item?:Item){setEdit(item||{id:""});setForm(item?{...item,starts_at:item.starts_at?String(item.starts_at).slice(0,16):""}:tab==="events"?{...emptyEvent}:tab==="site_content"?{key:"",title:"",body:""}:{key:"",value:""});setError("")}
- async function save(e:FormEvent){
-  e.preventDefault();
-  if(!db||!authorized||!["events","site_content","site_settings"].includes(tab))return;
-  setBusy(true);
-  let result: {error: {message:string}|null};
-  if(tab==="events"){
-    const payload={title:form.title,category:form.category,description:form.description,starts_at:form.starts_at||null,location:form.location,image_url:form.image_url,ticket_url:form.ticket_url,status:form.status};
-    result=edit?.id?await db.from("events").update(payload).eq("id",edit.id):await db.from("events").insert(payload);
-  }else if(tab==="site_content"){
-    const payload={key:form.key,title:form.title,body:form.body};
-    result=edit?.id?await db.from("site_content").update(payload).eq("id",edit.id):await db.from("site_content").insert(payload);
-  }else{
-    const payload={key:form.key,value:form.value};
-    result=edit?.id?await db.from("site_settings").update(payload).eq("id",edit.id):await db.from("site_settings").insert(payload);
+  const [db, setDb] = useState<SupabaseClient | null>(null);
+  const [user, setUser] = useState<string | null>(null);
+  const [authorized, setAuthorized] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [tab, setTab] = useState<Tab>("events");
+  const [rows, setRows] = useState<Item[]>([]);
+  const [edit, setEdit] = useState<Item | null>(null);
+  const [form, setForm] = useState<Record<string, any>>(emptyEvent);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [uploading, setUploading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const client = supabaseBrowser();
+      setDb(client);
+      void client.auth.getUser().then(({ data }) => setUser(data.user?.id || null));
+      const { data: { subscription } } = client.auth.onAuthStateChange((_event, session) => setUser(session?.user?.id || null));
+      return () => subscription.unsubscribe();
+    } catch (err) { setError(String(err)); }
+  }, []);
+  useEffect(() => {
+    if (!db || !user) { setAuthorized(false); setRows([]); return; }
+    let active = true;
+    void db.from("admin_users").select("user_id").eq("user_id", user).maybeSingle().then(({ data, error: authError }) => {
+      if (active) { setAuthorized(!!data && !authError); if (authError) setError(authError.message); }
+    });
+    return () => { active = false; };
+  }, [db, user]);
+  useEffect(() => { if (db && authorized) void load(tab); }, [db, authorized, tab]);
+
+  async function load(currentTab: Tab) {
+    if (!db) return;
+    const { data, error: loadError } = await db.from(currentTab).select("*").order("created_at", { ascending: false });
+    if (loadError) setError(loadError.message); else setRows(data || []);
   }
-  setBusy(false);
-  if(result.error)setError(result.error.message);else{setEdit(null);void load()}
- }
- async function remove(item:Item){if(!db||!authorized||!confirm("Eliminar este registo?"))return;const {error}=await db.from(tab).delete().eq("id",item.id);if(error)setError(error.message);else void load()}
- async function publish(item:Item){if(!db||!authorized)return;const {error}=await db.from("events").update({status:item.status==="published"?"draft":"published"}).eq("id",item.id);if(error)setError(error.message);else void load()}
- const field=(name:string,label:string,kind:"input"|"textarea"|"datetime-local"="input")=><label style={{display:"grid",gap:5,marginBottom:12}}>{label}{kind==="textarea"?<textarea rows={4} value={form[name]||""} onChange={e=>setForm({...form,[name]:e.target.value})}/>:<input type={kind==="datetime-local"?"datetime-local":"text"} value={form[name]||""} onChange={e=>setForm({...form,[name]:e.target.value})}/>}</label>;
- return <main style={{minHeight:"100vh",background:"#f5f3ed",color:"#1d1c19",fontFamily:"Arial,sans-serif",padding:24}}><div style={{maxWidth:1100,margin:"auto"}}><header style={{display:"flex",justifyContent:"space-between",alignItems:"center",borderBottom:"2px solid",paddingBottom:18}}><strong>CCCO ✳ / Administração</strong><a href="/" style={{color:"inherit"}}>Ver website ↗</a></header>{!user?<section style={{maxWidth:390,margin:"10vh auto",background:"white",padding:30}}><h1>Entrar no painel</h1><form onSubmit={login}><label>Email<input type="email" required value={email} onChange={e=>setEmail(e.target.value)} style={{display:"block",width:"100%",margin:"8px 0 16px",padding:10}}/></label><label>Palavra-passe<input type="password" required value={password} onChange={e=>setPassword(e.target.value)} style={{display:"block",width:"100%",margin:"8px 0 16px",padding:10}}/></label><button disabled={busy||!db}>Entrar →</button></form>{error&&<p role="alert">{error}</p>}</section>:!authorized?<section><h1>Acesso reservado</h1><p>Esta conta não tem permissão de administrador. Confirme o registo em admin_users no Supabase.</p><button onClick={()=>db?.auth.signOut()}>Sair</button></section>:<><div style={{display:"flex",justifyContent:"space-between",alignItems:"center",gap:20,flexWrap:"wrap"}}><h1>Painel de gestão<span style={{color:"#f06c36"}}>.</span></h1><button onClick={()=>db?.auth.signOut()}>Terminar sessão</button></div><nav style={{display:"flex",gap:8,flexWrap:"wrap",marginBottom:28}}>{tabs.map(t=><button key={t.id} onClick={()=>{setTab(t.id);setEdit(null);setError("")}} style={{padding:"12px 16px",background:tab===t.id?"#1d1c19":"white",color:tab===t.id?"white":"#1d1c19",border:"1px solid #ddd",cursor:"pointer"}}>{t.label}</button>)}</nav><section style={{background:"white",padding:24}}><div style={{display:"flex",justifyContent:"space-between",gap:12}}><h2>{tabs.find(t=>t.id===tab)?.label} ({rows.length})</h2>{["events","site_content","site_settings"].includes(tab)&&<button onClick={()=>begin()}>+ Adicionar</button>}</div>{error&&<p role="alert" style={{color:"#b52d25"}}>{error}</p>}<div style={{overflowX:"auto"}}><table style={{width:"100%",borderCollapse:"collapse"}}><tbody>{rows.map(r=><tr key={r.id} style={{borderTop:"1px solid #ddd"}}><td style={{padding:12}}><strong>{r.title||r.key||r.name||r.email}</strong><div style={{fontSize:13,color:"#666",marginTop:4}}>{r.category||r.subject||r.value||""}</div>{r.message&&<p>{r.message}</p>}</td><td>{r.starts_at?new Date(r.starts_at).toLocaleString("pt-PT"):r.created_at?new Date(r.created_at).toLocaleDateString("pt-PT"):""}</td><td style={{textAlign:"right",whiteSpace:"nowrap"}}>{tab==="events"&&<button onClick={()=>publish(r)}>{r.status==="published"?"Ocultar":"Publicar"}</button>}{["events","site_content","site_settings"].includes(tab)&&<><button onClick={()=>begin(r)}>Editar</button><button onClick={()=>remove(r)}>Eliminar</button></>}</td></tr>)}</tbody></table>{rows.length===0&&<p>Sem registos.</p>}</div></section>{edit&&<section style={{background:"white",padding:24,marginTop:20,maxWidth:700}}><h2>{edit.id?"Editar":"Adicionar"} conteúdo</h2><form onSubmit={save}>{tab==="events"?<>{field("title","Título")}{field("category","Categoria")}{field("description","Descrição","textarea")}{field("starts_at","Data e hora","datetime-local")}{field("location","Local")}{field("image_url","URL da imagem")}{field("ticket_url","URL da bilheteira")}<label>Estado <select value={form.status||"draft"} onChange={e=>setForm({...form,status:e.target.value})}><option value="draft">Rascunho</option><option value="published">Publicado</option></select></label></>:tab==="site_content"?<>{field("key","Chave (ex.: hero)")}{field("title","Título")}{field("body","Texto","textarea")}</>:<>{field("key","Chave")}{field("value","Valor","textarea")}</>}{error&&<p role="alert">{error}</p>}<div style={{display:"flex",gap:12,marginTop:20}}><button type="submit" disabled={busy}>Guardar</button><button type="button" onClick={()=>setEdit(null)}>Cancelar</button></div></form></section>}</>}</div></main>;
+  async function login(event: FormEvent) {
+    event.preventDefault(); if (!db) return;
+    setBusy(true); setError("");
+    const { error: loginError } = await db.auth.signInWithPassword({ email, password });
+    if (loginError) setError(loginError.message);
+    setBusy(false);
+  }
+  function begin(item?: Item) {
+    setEdit(item || { id: "" });
+    setForm(item ? { ...item, starts_at: item.starts_at ? String(item.starts_at).slice(0, 16) : "" }
+      : tab === "events" ? { ...emptyEvent } : tab === "site_content" ? { key: "", title: "", body: "" } : { key: "", value: "" });
+    setError(""); setNotice("");
+  }
+  async function uploadImage(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file || !db || !authorized) return;
+    event.target.value = "";
+    if (!["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type)) {
+      setError("Escolhe uma imagem JPG, PNG, WebP ou GIF."); return;
+    }
+    if (file.size > 5 * 1024 * 1024) { setError("A imagem deve ter no máximo 5 MB."); return; }
+    setUploading(true); setError(""); setNotice("");
+    const extension = file.type === "image/jpeg" ? "jpg" : file.type === "image/png" ? "png" : file.type === "image/gif" ? "gif" : "webp";
+    const path = `events/${crypto.randomUUID()}.${extension}`;
+    const { error: uploadError } = await db.storage.from("event-images").upload(path, file, { contentType: file.type, upsert: false });
+    if (uploadError) setError(`Não foi possível carregar a imagem: ${uploadError.message}. Confirma que executaste o SQL de armazenamento no Supabase.`);
+    else {
+      const { data } = db.storage.from("event-images").getPublicUrl(path);
+      setForm(current => ({ ...current, image_url: data.publicUrl }));
+      setNotice("Imagem carregada. Guarda o evento para associar o cartaz.");
+    }
+    setUploading(false);
+  }
+  async function save(event: FormEvent) {
+    event.preventDefault();
+    if (!db || !authorized || !editableTabs.includes(tab) || uploading) return;
+    setBusy(true); setError(""); setNotice("");
+    let result: { error: { message: string } | null };
+    if (tab === "events") {
+      const payload = { title: form.title, category: form.category, description: form.description, starts_at: form.starts_at || null, location: form.location, image_url: form.image_url || "", ticket_url: form.ticket_url || "", status: form.status };
+      result = edit?.id ? await db.from("events").update(payload).eq("id", edit.id) : await db.from("events").insert(payload);
+    } else if (tab === "site_content") {
+      const payload = { key: form.key, title: form.title, body: form.body };
+      result = edit?.id ? await db.from("site_content").update(payload).eq("id", edit.id) : await db.from("site_content").insert(payload);
+    } else {
+      const payload = { key: form.key, value: form.value };
+      result = edit?.id ? await db.from("site_settings").update(payload).eq("id", edit.id) : await db.from("site_settings").insert(payload);
+    }
+    setBusy(false);
+    if (result.error) setError(result.error.message);
+    else { setEdit(null); setNotice("Alterações guardadas com sucesso."); void load(tab); }
+  }
+  async function remove(item: Item) {
+    if (!db || !authorized || !editableTabs.includes(tab) || !confirm("Eliminar este registo?")) return;
+    const { error: deleteError } = await db.from(tab).delete().eq("id", item.id);
+    if (deleteError) setError(deleteError.message); else { setNotice("Registo eliminado."); void load(tab); }
+  }
+  async function publish(item: Item) {
+    if (!db || !authorized) return;
+    const status = item.status === "published" ? "draft" : "published";
+    const { error: updateError } = await db.from("events").update({ status }).eq("id", item.id);
+    if (updateError) setError(updateError.message); else { setNotice(status === "published" ? "Evento publicado." : "Evento ocultado."); void load(tab); }
+  }
+  function field(name: string, label: string, kind: "text" | "textarea" | "datetime-local" | "url" = "text") {
+    return <label className="ccco-field"><span>{label}</span>{kind === "textarea"
+      ? <textarea rows={4} value={form[name] || ""} onChange={e => setForm({ ...form, [name]: e.target.value })} />
+      : <input type={kind} value={form[name] || ""} onChange={e => setForm({ ...form, [name]: e.target.value })} />}</label>;
+  }
+  return <main className="ccco-admin">
+    <header className="ccco-topbar"><a className="ccco-brand" href="/"><span className="ccco-mark">✳</span><span>CCCO <small>CASA DA CULTURA CÉSAR OLIVEIRA</small></span></a><a className="ccco-visit" href="/" target="_blank" rel="noopener noreferrer">Ver website ↗</a></header>
+    {!user ? <section className="ccco-login ccco-panel"><span className="ccco-eyebrow">ÁREA RESERVADA</span><h1>Bem-vindo de volta<span className="ccco-accent">.</span></h1><p>Inicia sessão para gerir a programação e os conteúdos.</p><form onSubmit={login}>{/* email and password are never stored in the site content */}<label className="ccco-field"><span>Email</span><input type="email" required value={email} onChange={e => setEmail(e.target.value)} /></label><label className="ccco-field"><span>Palavra-passe</span><input type="password" required value={password} onChange={e => setPassword(e.target.value)} /></label><button className="ccco-primary" disabled={busy || !db}>{busy ? "A entrar…" : "Entrar no painel →"}</button></form>{error && <p className="ccco-error" role="alert">{error}</p>}</section>
+      : !authorized ? <section className="ccco-login ccco-panel"><h1>Acesso reservado</h1><p>Esta conta não tem permissão de administrador. Confirma o registo em admin_users no Supabase.</p>{error && <p className="ccco-error">{error}</p>}<button className="ccco-primary" onClick={() => void db?.auth.signOut()}>Terminar sessão</button></section>
+      : <div className="ccco-shell"><aside className="ccco-sidebar"><div className="ccco-sidebar-label">GESTÃO DO WEBSITE</div><nav aria-label="Navegação do painel">{tabs.map(item => <button key={item.id} className={`ccco-nav ${tab === item.id ? "active" : ""}`} onClick={() => { setTab(item.id); setEdit(null); setError(""); setNotice(""); }}><span className="ccco-nav-icon">{item.icon}</span>{item.label}</button>)}</nav><div className="ccco-sidebar-bottom"><span className="ccco-user">{email || "Administrador"}</span><button className="ccco-logout" onClick={() => void db?.auth.signOut()}>Terminar sessão ↗</button></div></aside>
+      <div className="ccco-content"><div className="ccco-heading"><div><span className="ccco-eyebrow">PAINEL DE ADMINISTRAÇÃO / CCCO</span><h1>{tabs.find(item => item.id === tab)?.label}<span className="ccco-accent">.</span></h1><p>Gere os conteúdos da Casa da Cultura num só lugar.</p></div>{editableTabs.includes(tab) && !edit && <button className="ccco-primary" onClick={() => begin()}>＋ Adicionar {tab === "events" ? "evento" : "registo"}</button>}</div>
+      {error && <div className="ccco-error" role="alert">{error}</div>}{notice && <div className="ccco-notice" role="status">{notice}</div>}
+      <section className="ccco-panel ccco-list"><div className="ccco-panel-heading"><div><span className="ccco-eyebrow">VISÃO GERAL</span><h2>{tabs.find(item => item.id === tab)?.label}</h2></div><span className="ccco-count">{rows.length} {rows.length === 1 ? "registo" : "registos"}</span></div>
+      {rows.length === 0 ? <div className="ccco-empty"><span>◇</span><h3>Ainda não existem registos</h3><p>{tab === "events" ? "Começa por adicionar o primeiro evento da programação." : "Os registos aparecerão aqui."}</p></div> : <div className="ccco-table-wrap"><table className="ccco-table"><tbody>{rows.map(item => <tr key={item.id}><td className="ccco-item"><div className="ccco-item-inner">{tab === "events" && item.image_url ? <img className="ccco-thumb" src={item.image_url} alt="" /> : tab === "events" ? <span className="ccco-thumb ccco-thumb-empty">✳</span> : null}<div><strong>{item.title || item.key || item.name || item.email || "Sem título"}</strong><small>{item.category || item.subject || item.value || ""}</small>{item.message && <p>{item.message}</p>}</div></div></td><td className="ccco-date">{item.starts_at ? new Date(item.starts_at).toLocaleString("pt-PT") : item.created_at ? new Date(item.created_at).toLocaleDateString("pt-PT") : ""}</td><td>{tab === "events" && <span className={`ccco-status ${item.status === "published" ? "published" : ""}`}>{item.status === "published" ? "Publicado" : "Rascunho"}</span>}</td><td className="ccco-actions">{tab === "events" && <button onClick={() => void publish(item)}>{item.status === "published" ? "Ocultar" : "Publicar"}</button>}{editableTabs.includes(tab) && <><button onClick={() => begin(item)}>Editar</button><button className="ccco-danger" onClick={() => void remove(item)}>Eliminar</button></>}</td></tr>)}</tbody></table></div>}</section>
+      {edit && <section className="ccco-panel ccco-editor"><div className="ccco-panel-heading"><div><span className="ccco-eyebrow">EDITOR</span><h2>{edit.id ? "Editar" : "Novo"} {tab === "events" ? "evento" : "registo"}</h2></div><button className="ccco-close" onClick={() => setEdit(null)} aria-label="Fechar editor">✕</button></div><form onSubmit={save}>{tab === "events" ? <><div className="ccco-form-grid">{field("title", "Título do evento")}<label className="ccco-field"><span>Categoria</span><select value={form.category || "Música"} onChange={e => setForm({ ...form, category: e.target.value })}>{!categories.includes(form.category) && form.category && <option value={form.category}>{form.category} (anterior)</option>}{categories.map(category => <option key={category} value={category}>{category}</option>)}</select></label></div>{field("description", "Descrição", "textarea")}<div className="ccco-form-grid">{field("starts_at", "Data e hora", "datetime-local")}{field("location", "Local")}</div><div className="ccco-field"><span>Cartaz / imagem do evento</span><div className="ccco-upload">{form.image_url ? <img src={form.image_url} alt="Pré-visualização do cartaz" className="ccco-preview" /> : <div className="ccco-upload-placeholder"><span>▧</span><p>O cartaz aparecerá aqui</p></div>}<div className="ccco-upload-controls"><label className="ccco-upload-button">＋ {uploading ? "A carregar…" : "Escolher imagem"}<input type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={e => void uploadImage(e)} disabled={uploading || busy} /></label><small>JPG, PNG, WebP ou GIF · máximo 5 MB</small>{form.image_url && <button type="button" className="ccco-text-button" onClick={() => setForm({ ...form, image_url: "" })}>Remover imagem do evento</button>}</div></div></div>{field("ticket_url", "Ligação para bilhetes (opcional)", "url")}<label className="ccco-field"><span>Estado</span><select value={form.status || "draft"} onChange={e => setForm({ ...form, status: e.target.value })}><option value="draft">Rascunho</option><option value="published">Publicado</option></select></label></> : tab === "site_content" ? <>{field("key", "Chave (ex.: hero)")}{field("title", "Título")}{field("body", "Texto", "textarea")}</> : <>{field("key", "Chave")}{field("value", "Valor", "textarea")}</>}{error && <p className="ccco-error" role="alert">{error}</p>}<div className="ccco-form-actions"><button className="ccco-primary" type="submit" disabled={busy || uploading}>{busy ? "A guardar…" : "Guardar alterações →"}</button><button className="ccco-secondary" type="button" onClick={() => setEdit(null)}>Cancelar</button></div></form></section>}
+      </div></div>}
+  </main>;
 }
