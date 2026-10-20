@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { unsubscribeToken } from "../../../../lib/newsletter-token";
+import { unsubscribeToken } from "../../../../../lib/newsletter-token";
 
 export async function POST(request: Request) {
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
