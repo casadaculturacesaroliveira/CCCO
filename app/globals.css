@@ -12,3 +12,25 @@
 .event-poster img{display:block;width:100%;height:100%;object-fit:cover}
 @media(max-width:900px){.event:has(.event-poster){grid-template-columns:25px 75px 95px minmax(0,1fr) 100px;gap:12px}.event-poster{width:95px}}
 @media(max-width:640px){.event:has(.event-poster){grid-template-columns:24px 94px minmax(0,1fr) auto;gap:10px}.event:has(.event-poster) .event-number{grid-column:1;grid-row:1}.event:has(.event-poster) .event-date{grid-column:2/4;grid-row:1}.event:has(.event-poster) .event-poster{grid-column:2;grid-row:2;width:94px}.event:has(.event-poster) .event-main{grid-column:3/5;grid-row:2}.event:has(.event-poster) .event-action{grid-column:4;grid-row:1}}
+
+
+/* Programação visual em cartazes, inspirada em agendas culturais contemporâneas. */
+.program-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:36px 22px}
+.program-card{min-width:0;display:flex;flex-direction:column}
+.program-card-image{position:relative;aspect-ratio:3/4;background:#e2e3d7;overflow:hidden}
+.program-card-image>img{display:block;width:100%;height:100%;object-fit:cover;transition:transform .35s ease}
+.program-card:hover .program-card-image>img{transform:scale(1.035)}
+.program-card-category{position:absolute;left:14px;bottom:14px;background:var(--acid);color:var(--ink);padding:8px 10px;font:10px var(--mono);letter-spacing:.04em}
+.program-card-placeholder{height:100%;background:var(--dark);color:var(--acid);padding:24px;display:flex;flex-direction:column;justify-content:space-between}
+.program-card-placeholder span{font:13px var(--mono)}
+.program-card-placeholder strong{font:700 clamp(30px,3.4vw,54px)/.95 var(--display);letter-spacing:-.06em}
+.program-card-info{padding:18px 0 0;display:flex;flex-direction:column;flex:1}
+.program-card-date{font:11px var(--mono);text-transform:uppercase;color:#66695d}
+.program-card-info h3{font:650 clamp(19px,2vw,26px)/1.16 var(--display);letter-spacing:-.045em;margin:12px 0}
+.program-card-info p{font-size:12px;line-height:1.7;color:var(--muted);margin:0 0 22px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.program-card-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;border-top:1px solid var(--line);padding-top:13px;margin-top:auto;font:11px var(--mono)}
+.program-card-bottom>span{color:var(--muted)}
+.program-card-bottom a{border-bottom:1px solid var(--ink);padding-bottom:3px}
+@media(max-width:900px){.program-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 18px}}
+@media(max-width:640px){.program-grid{grid-template-columns:1fr;gap:36px}.program-card-image{max-width:520px}.program-card-info h3{font-size:23px}}
+@media(prefers-reduced-motion:reduce){.program-card-image>img{transition:none}}
