@@ -5,7 +5,7 @@ import { unsubscribeToken } from "../../../../lib/newsletter-token";
 export async function POST(request: Request) {
   const url=process.env.NEXT_PUBLIC_SUPABASE_URL, serviceKey=process.env.SUPABASE_SERVICE_ROLE_KEY;
   const resendKey=process.env.RESEND_API_KEY, sender=process.env.NEWSLETTER_FROM_EMAIL, site=process.env.NEWSLETTER_SITE_URL;
-  if(!url||!serviceKey||!resendKey||!sender||!site||!process.env.NEWSLETTER_UNSUBSCRIBE_SECRET)
+  if(!url||!serviceKey||!resendKey||!sender||!site||!(process.env.NEWSLETTER_UNSUBSCRIBE_SECRET && process.env.NEWSLETTER_UNSUBSCRIBE_SECRET.length>=32))
     return NextResponse.json({error:"Configuração incompleta. Confirma RESEND_API_KEY, NEWSLETTER_FROM_EMAIL, NEWSLETTER_SITE_URL e NEWSLETTER_UNSUBSCRIBE_SECRET."},{status:503});
   const auth=request.headers.get("authorization")||"";
   if(!auth.startsWith("Bearer ")) return NextResponse.json({error:"Inicia sessão no painel."},{status:401});
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   if(previousError) return NextResponse.json({error:"Histórico de envios indisponível."},{status:500});
   const done=new Set((previous||[]).map(x=>String(x.subscriber_id)));
   const remaining=(subscribers||[]).filter(x=>!done.has(String(x.id)));
-  const batch=remaining.slice(0,20);
+  const batch=remaining.slice(0,5);
   let sent=0,failed=0;
   const escape=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   const root=site.replace(/\/$/,"");
