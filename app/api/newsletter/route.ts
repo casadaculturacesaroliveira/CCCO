@@ -4,6 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const consent = body?.consent === true;
+    if (!consent) return NextResponse.json({ error: "É necessário aceitar a receção da newsletter." }, { status: 400 });
     const email = typeof body?.email === "string" ? body.email.trim().toLowerCase() : "";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || email.length > 254) {
       return NextResponse.json({ error: "Indique um email válido." }, { status: 400 });
@@ -18,8 +20,8 @@ export async function POST(request: Request) {
 
     const supabase = createClient(url, key, { auth: { persistSession: false } });
     const { error } = await supabase.from("newsletter_subscribers").upsert(
-      { email, source: "website" },
-      { onConflict: "email", ignoreDuplicates: true }
+      { email, source: "website", consent_at: new Date().toISOString(), unsubscribed_at: null },
+      { onConflict: "email" }
     );
     if (error) {
       console.error("Newsletter: erro ao guardar inscrição:", error.code, error.message);
