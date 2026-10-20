@@ -14,7 +14,24 @@ export default function Admin() {
  async function load(){if(!db)return;const {data,error}=await db.from(tab).select("*").order("created_at",{ascending:false});if(error)setError(error.message);else setRows(data||[])}
  async function login(e:FormEvent){e.preventDefault();if(!db)return;setBusy(true);const {error}=await db.auth.signInWithPassword({email,password});setError(error?.message||"");setBusy(false)}
  function begin(item?:Item){setEdit(item||{id:""});setForm(item?{...item,starts_at:item.starts_at?String(item.starts_at).slice(0,16):""}:tab==="events"?{...emptyEvent}:tab==="site_content"?{key:"",title:"",body:""}:{key:"",value:""});setError("")}
- async function save(e:FormEvent){e.preventDefault();if(!db||!authorized)return;setBusy(true);const payload=tab==="events"?{title:form.title,category:form.category,description:form.description,starts_at:form.starts_at||null,location:form.location,image_url:form.image_url,ticket_url:form.ticket_url,status:form.status}:tab==="site_content"?{key:form.key,title:form.title,body:form.body}:{key:form.key,value:form.value};const q=edit?.id?db.from(tab).update(payload).eq("id",edit.id):db.from(tab).insert(payload);const {error}=await q;setBusy(false);if(error)setError(error.message);else{setEdit(null);void load()}}
+ async function save(e:FormEvent){
+  e.preventDefault();
+  if(!db||!authorized||!["events","site_content","site_settings"].includes(tab))return;
+  setBusy(true);
+  let result: {error: {message:string}|null};
+  if(tab==="events"){
+    const payload={title:form.title,category:form.category,description:form.description,starts_at:form.starts_at||null,location:form.location,image_url:form.image_url,ticket_url:form.ticket_url,status:form.status};
+    result=edit?.id?await db.from("events").update(payload).eq("id",edit.id):await db.from("events").insert(payload);
+  }else if(tab==="site_content"){
+    const payload={key:form.key,title:form.title,body:form.body};
+    result=edit?.id?await db.from("site_content").update(payload).eq("id",edit.id):await db.from("site_content").insert(payload);
+  }else{
+    const payload={key:form.key,value:form.value};
+    result=edit?.id?await db.from("site_settings").update(payload).eq("id",edit.id):await db.from("site_settings").insert(payload);
+  }
+  setBusy(false);
+  if(result.error)setError(result.error.message);else{setEdit(null);void load()}
+ }
  async function remove(item:Item){if(!db||!authorized||!confirm("Eliminar este registo?"))return;const {error}=await db.from(tab).delete().eq("id",item.id);if(error)setError(error.message);else void load()}
  async function publish(item:Item){if(!db||!authorized)return;const {error}=await db.from("events").update({status:item.status==="published"?"draft":"published"}).eq("id",item.id);if(error)setError(error.message);else void load()}
  const field=(name:string,label:string,kind:"input"|"textarea"|"datetime-local"="input")=><label style={{display:"grid",gap:5,marginBottom:12}}>{label}{kind==="textarea"?<textarea rows={4} value={form[name]||""} onChange={e=>setForm({...form,[name]:e.target.value})}/>:<input type={kind==="datetime-local"?"datetime-local":"text"} value={form[name]||""} onChange={e=>setForm({...form,[name]:e.target.value})}/>}</label>;
