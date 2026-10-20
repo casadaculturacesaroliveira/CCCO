@@ -1,6 +1,7 @@
  "use client";
 import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
+import Script from "next/script";
 
 type ProgramEvent = {date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string};
 const fallbackEvents: ProgramEvent[] = [
@@ -13,6 +14,10 @@ export default function Home() {
   const [cookieOpen, setCookieOpen] = useState(false);
   const [cookieSettings, setCookieSettings] = useState(false);
   const [analytics, setAnalytics] = useState(false);
+  const [marketing, setMarketing] = useState(false);
+  const [consentChoice, setConsentChoice] = useState<{analytics:boolean;marketing:boolean}|null>(null);
+  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const [email, setEmail] = useState("");
   const [newsState, setNewsState] = useState("");
   const [contactState, setContactState] = useState("");
@@ -45,12 +50,9 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-    try { if (!localStorage.getItem("ccco-cookie-consent")) setCookieOpen(true); } catch {}
+    try { const saved = localStorage.getItem("ccco-cookie-consent"); if (!saved) { setCookieOpen(true); return; } const parsed = JSON.parse(saved); if (typeof parsed.analytics !== "boolean" || typeof parsed.marketing !== "boolean") { setCookieOpen(true); return; } setConsentChoice({analytics:parsed.analytics,marketing:parsed.marketing}); setAnalytics(parsed.analytics); setMarketing(parsed.marketing); } catch { setCookieOpen(true); }
   }, []);
-  function consent(value: string) {
-    try { localStorage.setItem("ccco-cookie-consent", value); } catch {}
-    setCookieOpen(false); setCookieSettings(false);
-  }
+  function consent(allowAnalytics: boolean, allowMarketing: boolean) { const previous = consentChoice; const next = {analytics:allowAnalytics,marketing:allowMarketing}; try { localStorage.setItem("ccco-cookie-consent", JSON.stringify({essential:true,...next,at:new Date().toISOString()})); } catch {} setConsentChoice(next); setAnalytics(allowAnalytics); setMarketing(allowMarketing); setCookieOpen(false); setCookieSettings(false); if (previous && ((previous.analytics && !allowAnalytics) || (previous.marketing && !allowMarketing))) window.location.reload(); }
   async function subscribe(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); setNewsState("A enviar…");
     try {
@@ -73,6 +75,8 @@ export default function Home() {
   }
 
   return <main>
+    {consentChoice?.analytics && gaId && /^G-[A-Z0-9]+$/.test(gaId) && <><Script src={"https://www.googletagmanager.com/gtag/js?id="+gaId} strategy="afterInteractive" /><Script id="ccco-ga4" strategy="afterInteractive">{ "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag(\u0027js\u0027,new Date());gtag(\u0027config\u0027,\u0027"+gaId+"\u0027,{anonymize_ip:true});" }</Script></>}
+    {consentChoice?.marketing && pixelId && /^[0-9]+$/.test(pixelId) && <Script id="ccco-meta-pixel" strategy="afterInteractive">{ "!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version=\u00272.0\u0027;n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,\u0027script\u0027,\u0027https://connect.facebook.net/en_US/fbevents.js\u0027);fbq(\u0027init\u0027,\u0027"+pixelId+"\u0027);fbq(\u0027track\u0027,\u0027PageView\u0027);" }</Script>}
     <header className="site-header">
       <a href="#inicio" className="brand" aria-label="Casa da Cultura César Oliveira — início"><img src="/logo.png" alt="Casa da Cultura César Oliveira" /></a>
       <button className="menu-toggle" aria-label="Abrir menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "FECHAR −" : "MENU +"}</button>
@@ -108,6 +112,6 @@ export default function Home() {
 
     <footer className="footer"><a href="#inicio" className="footer-brand"><img src="/logo.png" alt="Casa da Cultura César Oliveira"/></a><p>Um lugar para a cultura.<br/>Um lugar para todos.</p><div className="footer-links"><a href="#programacao">Programação</a><a href="https://www.ticketline.pt/salas/sala/4148" target="_blank" rel="noopener noreferrer">Bilheteira ↗</a><a href="#contacto">Contacto</a><button onClick={() => {setCookieOpen(true);setCookieSettings(true)}}>Preferências de cookies</button></div><div className="footer-bottom"><span>© {new Date().getFullYear()} Casa da Cultura César Oliveira</span><span>FEITO PARA VIVER AO VIVO. ↗</span></div></footer>
 
-    {cookieOpen && <div className="cookie-backdrop" role="presentation"><section className="cookie-panel" role="dialog" aria-modal="true" aria-labelledby="cookie-title"><div className="cookie-top"><span>CCCO / PRIVACIDADE</span><span>✳</span></div><h2 id="cookie-title">{cookieSettings ? "As suas preferências." : "A sua privacidade importa."}</h2><p>Utilizamos cookies essenciais para o funcionamento do site. Com a sua autorização, poderemos também usar cookies analíticos para melhorar a experiência.</p>{cookieSettings && <label className="analytics-toggle"><input type="checkbox" checked={analytics} onChange={e => setAnalytics(e.target.checked)}/> Permitir cookies analíticos</label>}<div className="cookie-actions"><button className="cookie-accept" onClick={() => consent(JSON.stringify({essential:true,analytics:cookieSettings ? analytics : true,at:new Date().toISOString()}))}>Aceitar todos</button><button onClick={() => consent(JSON.stringify({essential:true,analytics:false,at:new Date().toISOString()}))}>Só essenciais</button>{!cookieSettings && <button onClick={() => setCookieSettings(true)}>Personalizar</button>}</div><small>Os cookies essenciais não podem ser desativados. Pode alterar a sua escolha a qualquer momento no rodapé.</small></section></div>}
+    {cookieOpen && <div className="cookie-backdrop" role="presentation"><section className="cookie-panel" role="dialog" aria-modal="true" aria-labelledby="cookie-title"><div className="cookie-top"><span>CCCO / PRIVACIDADE</span><span>✳</span></div><h2 id="cookie-title">{cookieSettings ? "As suas preferências." : "A sua privacidade importa."}</h2><p>Utilizamos armazenamento essencial para o funcionamento do site. Com a sua autorização, o Google Analytics ajuda-nos a compreender as visitas e o Meta Pixel permite medir campanhas de publicidade no Facebook e Instagram. Pode escolher cada finalidade em separado.</p>{cookieSettings && <div className="cookie-preferences"><label className="analytics-toggle"><input type="checkbox" checked={analytics} onChange={e => setAnalytics(e.target.checked)}/> Estatísticas (Google Analytics)</label><label className="analytics-toggle"><input type="checkbox" checked={marketing} onChange={e => setMarketing(e.target.checked)}/> Publicidade (Meta Pixel)</label></div>}<div className="cookie-actions"><button className="cookie-accept" onClick={() => consent(true,true)}>Aceitar todos</button><button onClick={() => consent(false,false)}>Só essenciais</button>{cookieSettings ? <button onClick={() => consent(analytics,marketing)}>Guardar preferências</button> : <button onClick={() => setCookieSettings(true)}>Personalizar</button>}</div><small>Pode alterar as suas preferências a qualquer momento no rodapé. As ferramentas opcionais não são carregadas antes do consentimento.</small></section></div>
   </main>;
 }
