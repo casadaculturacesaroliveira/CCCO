@@ -81,7 +81,7 @@ export default function Home() {
       <a href="#inicio" className="brand" aria-label="Casa da Cultura César Oliveira — início"><img src="/logo.png" alt="Casa da Cultura César Oliveira" /></a>
       <button className="menu-toggle" aria-label="Abrir menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "FECHAR −" : "MENU +"}</button>
       <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
-        <a href="#inicio" onClick={() => setMenuOpen(false)}>Home</a><a href="#ccco" onClick={() => setMenuOpen(false)}>A CCCO</a><a href="#programacao" onClick={() => setMenuOpen(false)}>Programação</a><a href="https://www.ticketline.pt/salas/sala/4148" target="_blank" rel="noopener noreferrer" onClick={() => setMenuOpen(false)}>Bilheteira ↗</a><a href="#informacoes" onClick={() => setMenuOpen(false)}>Informações</a><a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
+        <a href="#inicio" onClick={() => setMenuOpen(false)}>Home</a><a href="#ccco" onClick={() => setMenuOpen(false)}>A CCCO</a><a href="#programacao" onClick={() => setMenuOpen(false)}>Programação</a><a href="#informacoes" onClick={() => setMenuOpen(false)}>Informações</a><a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
       </nav>
       <a className="header-cta" href="https://www.ticketline.pt/salas/sala/4148" target="_blank" rel="noopener noreferrer">Bilheteira <span>↗</span></a>
     </header>
