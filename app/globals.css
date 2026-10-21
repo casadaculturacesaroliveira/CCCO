@@ -56,3 +56,13 @@
 #bilheteira .ticket-copy>p:not(.eyebrow){max-width:none;line-height:1.85}
 @media(max-width:900px){#apresentacao-missao .intro-grid,#bilheteira.ticket{grid-template-columns:1fr;gap:30px}#apresentacao-missao .intro-text,#bilheteira .ticket-copy{max-width:100%}}
 @media(max-width:640px){#apresentacao-missao.section-pad,#bilheteira.section-pad{padding-left:5%;padding-right:5%}}
+
+/* Espaços da CCCO: secções de leitura amplas e responsivas */
+#espacos .espacos-content{display:grid;grid-template-columns:minmax(210px,.65fr) minmax(0,1.35fr);gap:clamp(28px,5vw,90px);padding-top:40px;align-items:start}
+#espacos .espacos-content>h2{margin:0;font-size:clamp(38px,4.8vw,64px)}
+#espacos .espacos-list{min-width:0;max-width:850px}
+#espacos .espacos-item{padding:0 0 24px;margin:0 0 28px;border-bottom:1px solid #d3d2c9}
+#espacos .espacos-item:last-child{border-bottom:0;margin-bottom:0}
+#espacos .espacos-item h3{font:600 clamp(19px,2vw,25px)/1.25 var(--display);letter-spacing:-.025em;margin:0 0 12px}
+#espacos .espacos-item p{font-size:14px;line-height:1.9;color:#686a61;margin:0}
+@media(max-width:900px){#espacos .espacos-content{grid-template-columns:1fr;gap:30px}#espacos .espacos-list{max-width:none}}
