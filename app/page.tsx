@@ -81,7 +81,7 @@ export default function Home() {
       <a href="#inicio" className="brand" aria-label="Casa da Cultura César Oliveira — início"><img src="/logo.png" alt="Casa da Cultura César Oliveira" /></a>
       <button className="menu-toggle" aria-label="Abrir menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>{menuOpen ? "FECHAR −" : "MENU +"}</button>
       <nav className={menuOpen ? "nav nav-open" : "nav"} aria-label="Navegação principal">
-        <a href="#inicio" onClick={() => setMenuOpen(false)}>Home</a><a href="#ccco" onClick={() => setMenuOpen(false)}>A CCCO</a><a href="#programacao" onClick={() => setMenuOpen(false)}>Programação</a><a href="#informacoes" onClick={() => setMenuOpen(false)}>Informações</a><a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
+        <a href="#inicio" onClick={() => setMenuOpen(false)}>Home</a><details className="nav-dropdown"><summary>A CCCO <span aria-hidden="true">⌄</span></summary><div className="nav-submenu"><a href="#apresentacao-missao" onClick={() => setMenuOpen(false)}>APRESENTAÇÃO E MISSÃO</a><a href="#espacos" onClick={() => setMenuOpen(false)}>ESPAÇOS</a></div></details><a href="#programacao" onClick={() => setMenuOpen(false)}>Programação</a><a href="#informacoes" onClick={() => setMenuOpen(false)}>Informações</a><a href="#contacto" onClick={() => setMenuOpen(false)}>Contacto</a>
       </nav>
       <a className="header-cta" href="https://www.ticketline.pt/salas/sala/4148" target="_blank" rel="noopener noreferrer">Bilheteira <span>↗</span></a>
     </header>
@@ -97,7 +97,9 @@ export default function Home() {
       <div className="hero-bottom"><span>ARTE QUE NOS LIGA.</span><span>DESCUBRA O QUE VEM A SEGUIR ↓</span></div>
     </section>
 
-    <section className="intro section-pad" id="ccco"><div className="section-kicker"><span>01 / A CASA</span><span>MAIS DO QUE UM ESPAÇO</span></div><div className="intro-grid"><h2>{content.intro?.title || <>Um ponto de encontro.<br/><em>Mil possibilidades.</em></>}</h2><div className="intro-text"><p>{content.intro?.body || "Acreditamos na cultura como lugar de descoberta, partilha e transformação. Um espaço para ver, ouvir, pensar e sentir — em conjunto."}</p><a className="text-link" href="#contacto">Venha conhecer-nos <span>↗</span></a></div></div></section>
+    <section className="intro section-pad" id="apresentacao-missao"><div className="section-kicker"><span>01 / A CASA</span><span>MAIS DO QUE UM ESPAÇO</span></div><div className="intro-grid"><h2>{content.intro?.title || <>Um ponto de encontro.<br/><em>Mil possibilidades.</em></>}</h2><div className="intro-text"><p>{content.intro?.body || "Acreditamos na cultura como lugar de descoberta, partilha e transformação. Um espaço para ver, ouvir, pensar e sentir — em conjunto."}</p><a className="text-link" href="#contacto">Venha conhecer-nos <span>↗</span></a></div></div></section>
+
+    <section className="intro section-pad" id="espacos"><div className="section-kicker"><span>ESPAÇOS</span><span>CASA DA CULTURA CÉSAR OLIVEIRA</span></div><div className="intro-grid"><h2>Espaços para <em>viver a cultura.</em></h2><div className="intro-text"><p>Conheça os espaços da Casa da Cultura César Oliveira, dedicados ao encontro entre a comunidade e as diferentes expressões artísticas.</p><a className="text-link" href="#contacto">Peça mais informações <span>↗</span></a></div></div></section>
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
       <div className="program-grid">{events.map((ev, i) => <article className="program-card" key={i}>
