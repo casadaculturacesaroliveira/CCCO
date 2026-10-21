@@ -103,8 +103,8 @@ export default function Home() {
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
       <div className="program-grid">{events.map((ev, i) => <article className="program-card" key={i}>
-        <div className="program-card-image">{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span></div>
-        <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><p>{ev.desc}</p><div className="program-card-bottom"><span>{ev.tag}</span>{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Bilhetes para "+ev.title}>Bilhetes ↗</a> : <span>Em breve ↗</span>}</div></div>
+        <div className="program-card-image">{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><div className="program-card-overlay"><strong>{ev.title}</strong><p>{ev.desc}</p></div></div>
+        <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Bilhetes para "+ev.title}>Bilhetes ↗</a> : <span>Bilhetes em breve</span>}</div></div>
       </article>)}</div>
       <p className="editor-note">A agenda será atualizada com eventos e datas confirmados.</p>
     </section>
