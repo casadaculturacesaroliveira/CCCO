@@ -45,3 +45,14 @@
 .nav-submenu a:hover{background:rgba(0,0,0,.035)}
 #apresentacao-missao,#espacos{scroll-margin-top:90px}
 @media(max-width:640px){.nav-dropdown{font-size:17px;width:100%}.nav-submenu{position:static;min-width:0;box-shadow:none;border:0;border-left:1px solid var(--line);margin:12px 0 0 7px;padding:0 0 0 10px;background:transparent}.nav-submenu a{font-size:12px;padding:11px 8px}}
+
+/* Apresentação e Bilheteira: colunas de leitura mais largas, com margens confortáveis. */
+#apresentacao-missao.section-pad,#bilheteira.section-pad{padding-left:clamp(28px,6vw,110px);padding-right:clamp(28px,6vw,110px)}
+#apresentacao-missao .intro-grid{grid-template-columns:minmax(220px,.65fr) minmax(0,1.35fr);gap:clamp(28px,5vw,90px);align-items:start}
+#apresentacao-missao .intro-text{max-width:850px;width:100%}
+#apresentacao-missao .intro-text p{margin:0 0 20px;line-height:1.85}
+#bilheteira.ticket{grid-template-columns:minmax(220px,.65fr) minmax(0,1.35fr);gap:clamp(28px,5vw,90px);align-items:start}
+#bilheteira .ticket-copy{min-width:0;max-width:850px}
+#bilheteira .ticket-copy>p:not(.eyebrow){max-width:none;line-height:1.85}
+@media(max-width:900px){#apresentacao-missao .intro-grid,#bilheteira.ticket{grid-template-columns:1fr;gap:30px}#apresentacao-missao .intro-text,#bilheteira .ticket-copy{max-width:100%}}
+@media(max-width:640px){#apresentacao-missao.section-pad,#bilheteira.section-pad{padding-left:5%;padding-right:5%}}
