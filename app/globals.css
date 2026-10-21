@@ -34,3 +34,14 @@
 @media(max-width:900px){.program-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:30px 18px}}
 @media(max-width:640px){.program-grid{grid-template-columns:1fr;gap:36px}.program-card-image{max-width:520px}.program-card-info h3{font-size:23px}}
 @media(prefers-reduced-motion:reduce){.program-card-image>img{transition:none}}
+
+/* Menu dropdown A CCCO */
+.nav-dropdown{position:relative;font-size:13px;color:#464740}
+.nav-dropdown summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:7px}
+.nav-dropdown summary::-webkit-details-marker{display:none}
+.nav-dropdown summary:hover,.nav-dropdown[open] summary{color:#7a8c39}
+.nav-submenu{position:absolute;z-index:30;top:calc(100% + 15px);left:0;min-width:240px;background:var(--paper);border:1px solid var(--line);padding:12px 0;box-shadow:0 12px 25px rgba(0,0,0,.08);display:flex;flex-direction:column;gap:0}
+.nav-submenu a{display:block;padding:12px 18px;font-size:11px;white-space:nowrap}
+.nav-submenu a:hover{background:rgba(0,0,0,.035)}
+#apresentacao-missao,#espacos{scroll-margin-top:90px}
+@media(max-width:640px){.nav-dropdown{font-size:17px;width:100%}.nav-submenu{position:static;min-width:0;box-shadow:none;border:0;border-left:1px solid var(--line);margin:12px 0 0 7px;padding:0 0 0 10px;background:transparent}.nav-submenu a{font-size:12px;padding:11px 8px}}
