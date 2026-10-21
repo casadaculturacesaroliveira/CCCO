@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { timingSafeEqual } from "node:crypto";
-import { unsubscribeToken } from "../../../lib/newsletter-token";
+import { unsubscribeToken } from "../../../../lib/newsletter-token";
 
 function page(message: string) {
   return new Response('<!doctype html><html lang="pt"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>Newsletter CCCO</title><body style="font:18px Arial;max-width:560px;margin:12vh auto;padding:24px"><h1>Casa da Cultura César Oliveira</h1><p>'+message+'</p><a href="/">Voltar ao site</a></body></html>', { headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" } });
