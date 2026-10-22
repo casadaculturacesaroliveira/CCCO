@@ -85,3 +85,6 @@
 @media(max-width:480px){.program-grid{grid-template-columns:1fr 1fr;gap:24px 12px}.program-card-image{max-height:none}.program-card-overlay{padding:12px}.program-card-overlay strong{font-size:15px}.program-card-overlay p{font-size:11px;line-height:1.4}.program-card-info h3{font-size:17px}.program-card-bottom{font-size:10px}}
 @media(hover:none){.program-card-overlay{position:static;visibility:visible;opacity:1;background:transparent;color:var(--ink);padding:10px 0 0;max-height:none;display:block}.program-card-overlay strong{display:none}.program-card-overlay p{color:var(--muted);font-size:12px;line-height:1.5}.program-card-image{overflow:visible;margin-bottom:80px}.program-card-overlay{position:absolute;top:100%;bottom:auto;left:0;right:0;max-height:72px;overflow:auto}.program-card-image:hover .program-card-category{opacity:1}}
 @media(prefers-reduced-motion:reduce){.program-card-overlay{transition:none}}
+
+/* Alinhamento justificado dos textos corridos em todo o site. */
+p { text-align: justify; text-justify: inter-word; }
