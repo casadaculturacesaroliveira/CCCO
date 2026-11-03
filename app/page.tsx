@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 import Script from "next/script";
 
-type ProgramEvent = {date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string};
+type ProgramEvent = {date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string;starts_at?:string};
 const fallbackEvents: ProgramEvent[] = [
   { date: "EM BREVE", month: "—", type: "MÚSICA", title: "Novos encontros, novas histórias", desc: "A próxima programação está a ser preparada. Fique atento às novidades.", tag: "Em atualização" },
   { date: "EM BREVE", month: "—", type: "ARTES PERFORMATIVAS", title: "O palco está à sua espera", desc: "Espetáculos, criação contemporânea e momentos para partilhar.", tag: "Em atualização" },
@@ -23,6 +23,13 @@ export default function Home() {
   const [contactState, setContactState] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [events, setEvents] = useState<ProgramEvent[]>(fallbackEvents);
+  const [today, setToday] = useState(() => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()));
+  useEffect(() => {
+    const refresh = () => setToday(new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()));
+    const timer = window.setInterval(refresh, 60_000);
+    return () => window.clearInterval(timer);
+  }, []);
+  const upcomingEvents = events.filter(ev => !ev.starts_at || new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(ev.starts_at)) >= today);
   const [content, setContent] = useState<Record<string,{title:string;body:string}>>({});
   const [settings, setSettings] = useState<Record<string,string>>({});
   useEffect(() => {
@@ -31,12 +38,12 @@ export default function Home() {
       const db = supabaseBrowser();
       void db.from("events").select("title,category,description,starts_at,ticket_url,image_url")
         .eq("status","published").order("starts_at",{ascending:true}).then(({data,error}) => {
-          if (!active || error || !data || !data.length) return;
+          if (!active || error || !data) return;
           setEvents(data.map(ev => ({
             date: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{day:"2-digit"}) : "EM BREVE",
             month: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{month:"short",year:"numeric"}).toUpperCase() : "—",
             type: ev.category.toUpperCase(), title:ev.title,desc:ev.description,tag:ev.starts_at?"Confirmado":"Em breve",
-            ticket_url:ev.ticket_url || "", image_url:ev.image_url || ""
+            ticket_url:ev.ticket_url || "", image_url:ev.image_url || "", starts_at:ev.starts_at || undefined
           })));
         });
       void db.from("site_content").select("key,title,body").then(({data}) => {
@@ -87,7 +94,7 @@ export default function Home() {
     </header>
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
-      <div className="program-grid">{events.map((ev, i) => <article className="program-card" key={i}>
+      <div className="program-grid">{upcomingEvents.map((ev, i) => <article className="program-card" key={i}>
         <div className="program-card-image">{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><div className="program-card-overlay"><strong>{ev.title}</strong><p>{ev.desc}</p></div></div>
         <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Comprar para "+ev.title}>Comprar ↗</a> : <span>Bilhetes em breve</span>}</div></div>
       </article>)}</div>
