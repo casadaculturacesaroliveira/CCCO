@@ -89,3 +89,10 @@
 
 /* Alinhamento justificado dos textos corridos em todo o site. */
 p { text-align: justify; text-justify: inter-word; }
+
+/* Fotografias compactas dos espaços */
+#espacos .espacos-foto{display:block;width:min(100%,220px);height:145px;object-fit:cover;border-radius:4px;margin:0 0 16px}
+.ccco-space-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:22px;margin-top:22px}
+.ccco-space-card{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
+.ccco-space-card>div{width:100%;height:130px;background:#e8e8e2;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px}
+.ccco-space-card img{width:100%;height:100%;object-fit:cover}
