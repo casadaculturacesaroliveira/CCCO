@@ -69,7 +69,8 @@
 
 /* Cartazes compactos, descrição ao passar o rato e bilhetes sem separadores */
 .program-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:30px 20px}
-.program-card-image{aspect-ratio:3/4;max-height:330px}
+/* Cartazes da programação: proporção de referência 900 × 1200 px, sem limitar a altura. */
+.program-card-image{aspect-ratio:900/1200;max-height:none}
 .program-card-overlay{position:absolute;inset:0;z-index:2;background:rgba(15,19,16,.90);color:#fff;padding:22px 18px;display:flex;flex-direction:column;justify-content:center;gap:12px;opacity:0;visibility:hidden;transition:opacity .2s ease,visibility .2s ease;overflow:auto}
 .program-card-overlay strong{font:650 clamp(17px,1.6vw,23px)/1.2 var(--display)}
 .program-card-overlay p{font-size:13px;line-height:1.65;color:#f2f2ed;margin:0;white-space:pre-line}
