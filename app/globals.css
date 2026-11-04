@@ -132,3 +132,9 @@ p { text-align: justify; text-justify: inter-word; }
 @keyframes ccco-banner-enter{from{opacity:.65}to{opacity:1}}
 @media(max-width:640px){.ccco-banner{height:420px}.ccco-banner-content{left:5%;bottom:18%;max-width:90%}.ccco-banner-content h2{font-size:clamp(30px,9vw,48px)}.ccco-banner-controls{right:5%;bottom:4%}.ccco-banner-controls button{width:35px;height:35px}}
 @media(prefers-reduced-motion:reduce){.ccco-banner-image img{animation:none}}
+
+.ccco-banner-fallback{background:radial-gradient(circle at 78% 42%,#6b7e3b 0%,#36472d 27%,#18251b 68%,#111b15 100%)}
+.ccco-banner-art{position:absolute;inset:0;display:flex;align-items:center;justify-content:flex-end;padding:5% 11%;color:#e8f4c1;opacity:.75}
+.ccco-banner-art span{position:absolute;top:13%;right:10%;font-size:clamp(18px,3vw,38px);font-weight:700;letter-spacing:.1em}
+.ccco-banner-art strong{font-size:clamp(65px,11vw,170px);line-height:.83;letter-spacing:-.09em;text-align:right;transform:rotate(-7deg)}
+@media(max-width:640px){.ccco-banner-art{padding:8%;opacity:.5}.ccco-banner-art strong{font-size:clamp(60px,16vw,100px)}}
