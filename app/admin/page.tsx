@@ -82,9 +82,9 @@ export default function Admin() {
         if (!ext) throw new Error("Formatos aceites: JPG, PNG, WebP, GIF, MP4 e WebM.");
         if (file.size > 5 * 1024 * 1024) throw new Error("Cada ficheiro deve ter no máximo 5 MB.");
         const path = `newsletter/${crypto.randomUUID()}.${ext}`;
-        const {error: uploadError} = await db.storage.from("event-images").upload(path, file, {contentType:file.type,upsert:false});
+        const {error: uploadError} = await db.storage.from("newsletter-media").upload(path, file, {contentType:file.type,upsert:false});
         if (uploadError) throw new Error("Falha no carregamento: "+uploadError.message+". O armazenamento pode precisar de permitir este formato.");
-        const url = db.storage.from("event-images").getPublicUrl(path).data.publicUrl;
+        const url = db.storage.from("newsletter-media").getPublicUrl(path).data.publicUrl;
         setNewsMedia(current => [...current, {url,type:file.type.startsWith("video/")?"video":"image",name:file.name}]);
       }
       setCampaignId(null); setNewsProgress(""); setNotice("Ficheiros adicionados à newsletter.");
