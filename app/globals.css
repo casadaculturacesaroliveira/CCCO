@@ -96,3 +96,23 @@ p { text-align: justify; text-justify: inter-word; }
 .ccco-space-card{display:flex;flex-direction:column;gap:12px;align-items:flex-start}
 .ccco-space-card>div{width:100%;height:130px;background:#e8e8e2;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px}
 .ccco-space-card img{width:100%;height:100%;object-fit:cover}
+
+/* Detalhes acessíveis dos espetáculos: hover com título/data e clique para abrir sinopse. */
+.program-card-image{display:block;width:100%;padding:0;border:0;border-radius:0;text-align:left;cursor:pointer;font:inherit;color:inherit}
+.program-card-image:focus-visible{outline:3px solid #849a3d;outline-offset:3px}
+.program-card-overlay{align-items:flex-start;pointer-events:none}
+.program-card-overlay-date{font:12px var(--mono);text-transform:uppercase;color:var(--acid)}
+.program-card-overlay-action{font:11px var(--mono);margin-top:8px}
+.program-modal-backdrop{position:fixed;inset:0;z-index:110;background:rgba(15,19,16,.82);display:flex;align-items:center;justify-content:center;padding:22px}
+.program-modal{position:relative;background:var(--paper);color:var(--ink);width:min(950px,100%);max-height:calc(100dvh - 44px);overflow:auto;display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);box-shadow:0 24px 80px #0005}
+.program-modal-close{position:absolute;right:12px;top:12px;z-index:2;width:42px;height:42px;border:0;background:var(--dark);color:white;font-size:28px;line-height:1}
+.program-modal-poster{background:#e2e3d7;min-height:320px}
+.program-modal-poster>img{display:block;width:100%;height:100%;max-height:calc(100dvh - 44px);object-fit:contain}
+.program-modal-content{padding:clamp(24px,4vw,52px);overflow-wrap:anywhere}
+.program-modal-category,.program-modal-date{font:12px var(--mono);text-transform:uppercase;color:#66695d}
+.program-modal-content h2{font:650 clamp(28px,3.2vw,46px)/1.1 var(--display);letter-spacing:-.045em;margin:18px 0}
+.program-modal-content h3{font:650 20px var(--display);margin:32px 0 12px}
+.program-modal-description{font-size:14px;line-height:1.85;white-space:pre-line}
+.program-modal-ticket{display:inline-block;margin-top:22px;padding:14px 18px;background:var(--dark);color:white;font-size:12px}
+@media(max-width:640px){.program-modal-backdrop{padding:10px}.program-modal{display:block;max-height:calc(100dvh - 20px)}.program-modal-poster{min-height:0;height:min(55dvh,440px)}.program-modal-poster>img{height:100%}.program-modal-content{padding:24px}.program-card-image{overflow:hidden;margin-bottom:0}.program-card-overlay{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;visibility:hidden;opacity:0;background:rgba(15,19,16,.90);color:white;padding:14px;max-height:none}.program-card-overlay strong{display:block}.program-card-overlay-date{color:var(--acid)}}
+@media(hover:none){.program-card-overlay{position:absolute;inset:0;visibility:hidden;opacity:0;display:flex;background:rgba(15,19,16,.90);color:white;padding:14px;max-height:none;overflow:hidden}.program-card-overlay strong{display:block}.program-card-image{overflow:hidden;margin-bottom:0}}
