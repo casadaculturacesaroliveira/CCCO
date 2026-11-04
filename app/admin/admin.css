@@ -6,3 +6,10 @@
 .ccco-space-card{display:flex;flex-direction:column;align-items:flex-start;gap:12px;min-width:0}
 .ccco-space-card>div{width:100%;height:130px;background:#e8e8e2;display:flex;align-items:center;justify-content:center;color:#666;font-size:12px;overflow:hidden;border-radius:4px}
 .ccco-space-card img{width:100%;height:100%;object-fit:cover}
+
+/* Pré-visualização de imagens e vídeos da newsletter */
+.ccco-news-media{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:14px;margin:18px 0}
+.ccco-news-media-item{display:flex;flex-direction:column;gap:8px;min-width:0;border:1px solid #ddd;padding:9px;border-radius:6px}
+.ccco-news-media-item img,.ccco-news-media-item video{width:100%;height:125px;object-fit:contain;background:#f0f0ec}
+.ccco-news-media-item span{font-size:12px;overflow-wrap:anywhere}
+.ccco-news-media-item button{background:none;border:0;text-align:left;text-decoration:underline;cursor:pointer}
