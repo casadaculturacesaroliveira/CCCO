@@ -116,3 +116,19 @@ p { text-align: justify; text-justify: inter-word; }
 .program-modal-ticket{display:inline-block;margin-top:22px;padding:14px 18px;background:var(--dark);color:white;font-size:12px}
 @media(max-width:640px){.program-modal-backdrop{padding:10px}.program-modal{display:block;max-height:calc(100dvh - 20px)}.program-modal-poster{min-height:0;height:min(55dvh,440px)}.program-modal-poster>img{height:100%}.program-modal-content{padding:24px}.program-card-image{overflow:hidden;margin-bottom:0}.program-card-overlay{position:absolute;inset:0;display:flex;align-items:flex-start;justify-content:center;visibility:hidden;opacity:0;background:rgba(15,19,16,.90);color:white;padding:14px;max-height:none}.program-card-overlay strong{display:block}.program-card-overlay-date{color:var(--acid)}}
 @media(hover:none){.program-card-overlay{position:absolute;inset:0;visibility:hidden;opacity:0;display:flex;background:rgba(15,19,16,.90);color:white;padding:14px;max-height:none;overflow:hidden}.program-card-overlay strong{display:block}.program-card-image{overflow:hidden;margin-bottom:0}}
+
+/* Carrossel de destaques no topo da página */
+.ccco-banner{position:relative;height:clamp(340px,43vw,570px);overflow:hidden;background:#1b211b;color:#fff;isolation:isolate}
+.ccco-banner-image,.ccco-banner-shade{position:absolute;inset:0}
+.ccco-banner-image img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;animation:ccco-banner-enter .5s ease both}
+.ccco-banner-shade{background:linear-gradient(90deg,rgba(8,12,9,.82),rgba(8,12,9,.25) 70%),linear-gradient(0deg,rgba(8,12,9,.4),transparent 55%)}
+.ccco-banner-content{position:absolute;left:8.5%;bottom:12%;max-width:min(650px,72%);z-index:1}
+.ccco-banner-eyebrow{font:11px var(--mono);letter-spacing:.14em;color:var(--acid)}
+.ccco-banner-content h2{font:600 clamp(35px,5vw,70px)/1.04 var(--display);letter-spacing:-.045em;margin:18px 0 12px;text-wrap:balance}
+.ccco-banner-content p{font:13px var(--mono);letter-spacing:.08em;text-transform:uppercase;text-align:left;margin:0 0 25px}
+.ccco-banner-content button,.ccco-banner-content a{display:inline-block;background:var(--acid);color:var(--ink);border:0;padding:14px 18px;font:12px var(--mono)}
+.ccco-banner-controls{position:absolute;right:5%;bottom:10%;z-index:2;display:flex;gap:15px;align-items:center;font:12px var(--mono)}
+.ccco-banner-controls button{width:43px;height:43px;border:1px solid #ffffff99;background:#151a1499;color:#fff;font-size:26px}
+@keyframes ccco-banner-enter{from{opacity:.65}to{opacity:1}}
+@media(max-width:640px){.ccco-banner{height:420px}.ccco-banner-content{left:5%;bottom:18%;max-width:90%}.ccco-banner-content h2{font-size:clamp(30px,9vw,48px)}.ccco-banner-controls{right:5%;bottom:4%}.ccco-banner-controls button{width:35px;height:35px}}
+@media(prefers-reduced-motion:reduce){.ccco-banner-image img{animation:none}}
