@@ -23,6 +23,15 @@ export default function Home() {
   const [contactState, setContactState] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const [events, setEvents] = useState<ProgramEvent[]>(fallbackEvents);
+  const [selectedEvent, setSelectedEvent] = useState<ProgramEvent | null>(null);
+  useEffect(() => {
+    if (!selectedEvent) return;
+    const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedEvent(null); };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.removeEventListener("keydown", onKeyDown); document.body.style.overflow = previousOverflow; };
+  }, [selectedEvent]);
   const [today, setToday] = useState(() => new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()));
   useEffect(() => {
     const refresh = () => setToday(new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()));
@@ -95,10 +104,11 @@ export default function Home() {
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
       <div className="program-grid">{upcomingEvents.map((ev, i) => <article className="program-card" key={i}>
-        <div className="program-card-image">{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><div className="program-card-overlay"><strong>{ev.title}</strong><p>{ev.desc}</p></div></div>
+        <button type="button" className="program-card-image" onClick={() => setSelectedEvent(ev)} aria-label={"Ver detalhes de "+ev.title+", "+ev.date+" "+ev.month}>{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><span className="program-card-overlay"><strong>{ev.title}</strong><span className="program-card-overlay-date">{ev.date} {ev.month}</span><span className="program-card-overlay-action">Ver detalhes ↗</span></span></button>
         <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Comprar para "+ev.title}>Comprar ↗</a> : <span>Bilhetes em breve</span>}</div></div>
       </article>)}</div>
       <p className="editor-note">A agenda será atualizada com eventos e datas confirmados.</p>
+      {selectedEvent && <div className="program-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedEvent(null); }}><section className="program-modal" role="dialog" aria-modal="true" aria-label={"Detalhes de "+selectedEvent.title}><button type="button" className="program-modal-close" onClick={() => setSelectedEvent(null)} aria-label="Fechar detalhes">×</button><div className="program-modal-poster">{selectedEvent.image_url ? <img src={selectedEvent.image_url} alt={"Cartaz do evento "+selectedEvent.title} /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}</div><div className="program-modal-content"><span className="program-modal-category">{selectedEvent.type}</span><h2>{selectedEvent.title}</h2><p className="program-modal-date">{selectedEvent.date} {selectedEvent.month}</p><h3>Sinopse</h3><p className="program-modal-description">{selectedEvent.desc || "Sinopse disponível em breve."}</p>{selectedEvent.ticket_url && <a className="program-modal-ticket" href={selectedEvent.ticket_url} target="_blank" rel="noopener noreferrer">Comprar bilhetes ↗</a>}</div></section></div>}
     </section>
 
 
