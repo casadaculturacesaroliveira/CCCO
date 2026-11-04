@@ -24,6 +24,8 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [events, setEvents] = useState<ProgramEvent[]>(fallbackEvents);
   const [selectedEvent, setSelectedEvent] = useState<ProgramEvent | null>(null);
+  const [bannerIndex, setBannerIndex] = useState(0);
+  const [bannerPaused, setBannerPaused] = useState(false);
   useEffect(() => {
     if (!selectedEvent) return;
     const onKeyDown = (event: KeyboardEvent) => { if (event.key === "Escape") setSelectedEvent(null); };
@@ -41,6 +43,13 @@ export default function Home() {
   const upcomingEvents = events.filter(ev => !ev.starts_at || new Intl.DateTimeFormat("sv-SE", { timeZone: "Europe/Lisbon", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(ev.starts_at)) >= today);
   const [content, setContent] = useState<Record<string,{title:string;body:string}>>({});
   const [settings, setSettings] = useState<Record<string,string>>({});
+  const bannerSlides = [
+    ...upcomingEvents.filter(ev => ev.image_url).slice(0, 6).map(ev => ({image: ev.image_url!, title: ev.title, subtitle: `${ev.date} ${ev.month}`, event: ev})),
+    ...[1,2,3].map(i => ({image: content[`banner_imagem_${i}`]?.body || "", title: content[`banner_imagem_${i}`]?.title || "Casa da Cultura César Oliveira", subtitle: "A NOSSA CASA", event: null})).filter(slide => slide.image),
+    ...[1,2,3,4,5,6,7].map(i => ({image: content[`espaco_imagem_${i}`]?.body || "", title: content[`espaco_nome_${i}`]?.title || "Casa da Cultura César Oliveira", subtitle: "OS NOSSOS ESPAÇOS", event: null})).filter(slide => slide.image)
+  ];
+  useEffect(() => { if (bannerPaused || bannerSlides.length < 2 || selectedEvent) return; const timer = window.setInterval(() => setBannerIndex(index => (index + 1) % bannerSlides.length), 5500); return () => window.clearInterval(timer); }, [bannerPaused, bannerSlides.length, selectedEvent]);
+  const activeBanner = bannerSlides[bannerIndex % Math.max(1, bannerSlides.length)];
   useEffect(() => {
     let active = true;
     try {
@@ -101,6 +110,8 @@ export default function Home() {
       </nav>
       <a className="header-cta" href="https://www.ticketline.pt/salas/sala/4148" target="_blank" rel="noopener noreferrer">Bilheteira <span>↗</span></a>
     </header>
+
+    {activeBanner && <section className="ccco-banner" aria-label="Destaques da Casa da Cultura" onMouseEnter={() => setBannerPaused(true)} onMouseLeave={() => setBannerPaused(false)} onFocus={() => setBannerPaused(true)} onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setBannerPaused(false); }}><div className="ccco-banner-image" key={activeBanner.image}><img src={activeBanner.image} alt={activeBanner.title} /></div><div className="ccco-banner-shade" /><div className="ccco-banner-content"><span className="ccco-banner-eyebrow">CCCO / EM DESTAQUE</span><h2>{activeBanner.title}</h2><p>{activeBanner.subtitle}</p>{activeBanner.event ? <button type="button" onClick={() => setSelectedEvent(activeBanner.event)}>Conhecer espetáculo ↗</button> : <a href="#espacos">Conhecer a Casa ↗</a>}</div>{bannerSlides.length > 1 && <div className="ccco-banner-controls"><button type="button" onClick={() => setBannerIndex(i => (i - 1 + bannerSlides.length) % bannerSlides.length)} aria-label="Imagem anterior">‹</button><span aria-live="off">{(bannerIndex % bannerSlides.length) + 1} / {bannerSlides.length}</span><button type="button" onClick={() => setBannerIndex(i => (i + 1) % bannerSlides.length)} aria-label="Imagem seguinte">›</button></div>}</section>}
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2><p>Novas perspetivas. Novas vozes.<br/>Momentos para viver em conjunto.</p></div>
       <div className="program-grid">{upcomingEvents.map((ev, i) => <article className="program-card" key={i}>
