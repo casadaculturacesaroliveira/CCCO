@@ -22,7 +22,7 @@ export async function POST(request: Request) {
   if(!Array.isArray(rawMedia) || rawMedia.length>6 || rawMedia.some((m:unknown)=>!m||typeof m!=="object"||typeof (m as {url?:unknown}).url!=="string"||typeof (m as {name?:unknown}).name!=="string"||!["image","video"].includes(String((m as {type?:unknown}).type)))) return NextResponse.json({error:"Ficheiros multimédia inválidos."},{status:400});
   const media=rawMedia as {url:string;name:string;type:"image"|"video"}[];
   const mediaOrigin=new URL(url).origin;
-  if(media.some(m=>{try{const u=new URL(m.url);return u.protocol!=="https:"||u.origin!==mediaOrigin||!u.pathname.startsWith("/storage/v1/object/public/event-images/newsletter/")||m.name.length>180;}catch{return true;}})) return NextResponse.json({error:"Ligação de ficheiro inválida."},{status:400});
+  if(media.some(m=>{try{const u=new URL(m.url);return u.protocol!=="https:"||u.origin!==mediaOrigin||!u.pathname.startsWith("/storage/v1/object/public/newsletter-media/newsletter/")||m.name.length>180;}catch{return true;}})) return NextResponse.json({error:"Ligação de ficheiro inválida."},{status:400});
   if(!/^[0-9a-f-]{36}$/i.test(campaignId)||!subject||subject.length>160||intro.length>2000)
     return NextResponse.json({error:"Assunto, mensagem ou campanha inválidos."},{status:400});
   const {data:events,error:eventError}=await client.from("events").select("title,starts_at,location,ticket_url").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(6);
