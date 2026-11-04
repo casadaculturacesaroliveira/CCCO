@@ -18,6 +18,11 @@ export async function POST(request: Request) {
   const subject=typeof body?.subject==="string"?body.subject.trim():"";
   const intro=typeof body?.intro==="string"?body.intro.trim():"";
   const campaignId=typeof body?.campaignId==="string"?body.campaignId:"";
+  const rawMedia=body?.media;
+  if(!Array.isArray(rawMedia) || rawMedia.length>6 || rawMedia.some((m:unknown)=>!m||typeof m!=="object"||typeof (m as {url?:unknown}).url!=="string"||typeof (m as {name?:unknown}).name!=="string"||!["image","video"].includes(String((m as {type?:unknown}).type)))) return NextResponse.json({error:"Ficheiros multimédia inválidos."},{status:400});
+  const media=rawMedia as {url:string;name:string;type:"image"|"video"}[];
+  const mediaOrigin=new URL(url).origin;
+  if(media.some(m=>{try{const u=new URL(m.url);return u.protocol!=="https:"||u.origin!==mediaOrigin||!u.pathname.startsWith("/storage/v1/object/public/event-images/newsletter/")||m.name.length>180;}catch{return true;}})) return NextResponse.json({error:"Ligação de ficheiro inválida."},{status:400});
   if(!/^[0-9a-f-]{36}$/i.test(campaignId)||!subject||subject.length>160||intro.length>2000)
     return NextResponse.json({error:"Assunto, mensagem ou campanha inválidos."},{status:400});
   const {data:events,error:eventError}=await client.from("events").select("title,starts_at,location,ticket_url").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(6);
@@ -37,7 +42,8 @@ export async function POST(request: Request) {
     if(lockError){failed++;continue;}
     const unsubscribe=root+"/api/newsletter/unsubscribe?email="+encodeURIComponent(subscriber.email)+"&token="+unsubscribeToken(subscriber.email);
     const items=(events||[]).map(ev=>'<li><strong>'+escape(ev.title)+'</strong> — '+(ev.starts_at?new Date(ev.starts_at).toLocaleString("pt-PT",{timeZone:"Europe/Lisbon",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"Data a anunciar")+(ev.location?" · "+escape(ev.location):"")+(ev.ticket_url&&/^https:\/\//.test(ev.ticket_url)?' · <a href="'+escape(ev.ticket_url)+'">Bilhetes</a>':"")+'</li>').join("");
-    const html='<div style="font:16px/1.6 Arial,sans-serif;max-width:640px;margin:auto"><h1>Casa da Cultura César Oliveira</h1><p>'+escape(intro).replace(/\n/g,"<br>")+'</p><h2>Próximos espetáculos</h2>'+(items?'<ul>'+items+'</ul>':'<p>Consulte a nossa programação em breve.</p>')+'<p><a href="'+escape(root)+'">Ver programação no site</a></p><hr><p style="font-size:12px">Recebeu este email porque aceitou a newsletter da CCCO. <a href="'+escape(unsubscribe)+'">Cancelar subscrição</a>.</p></div>';
+    const mediaHtml=media.map(m=>m.type==="image"?'<p><img src="'+escape(m.url)+'" alt="'+escape(m.name)+'" style="max-width:100%;height:auto;border-radius:6px"></p>':'<p>▶ <a href="'+escape(m.url)+'">Ver vídeo: '+escape(m.name)+'</a></p>').join("");
+    const html='<div style="font:16px/1.6 Arial,sans-serif;max-width:640px;margin:auto"><h1>Casa da Cultura César Oliveira</h1><p>'+escape(intro).replace(/\n/g,"<br>")+'</p>'+mediaHtml+'<h2>Próximos espetáculos</h2>'+(items?'<ul>'+items+'</ul>':'<p>Consulte a nossa programação em breve.</p>')+'<p><a href="'+escape(root)+'">Ver programação no site</a></p><hr><p style="font-size:12px">Recebeu este email porque aceitou a newsletter da CCCO. <a href="'+escape(unsubscribe)+'">Cancelar subscrição</a>.</p></div>';
     try {
       const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{"Authorization":"Bearer "+resendKey,"Content-Type":"application/json"},body:JSON.stringify({from:sender,to:[subscriber.email],subject,html,headers:{"List-Unsubscribe":"<"+unsubscribe+">"}})});
       const details=await response.json().catch(()=>({}));
