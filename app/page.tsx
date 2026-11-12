@@ -45,7 +45,7 @@ export default function Home() {
   const [settings, setSettings] = useState<Record<string,string>>({});
   const bannerSlides = [1,2,3,4,5,6].map(i => ({image: content[`banner_imagem_${i}`]?.body || "", title: content[`banner_imagem_${i}`]?.title || "Casa da Cultura César Oliveira", subtitle: "A NOSSA CASA", event: null})).filter(slide => slide.image);
   if (bannerSlides.length === 0) bannerSlides.push({image: "", title: "A cultura acontece aqui.", subtitle: "CASA DA CULTURA CÉSAR OLIVEIRA · OLIVEIRA DO HOSPITAL", event: null});
-  useEffect(() => { if (bannerPaused || bannerSlides.length < 2 || selectedEvent) return; const timer = window.setInterval(() => setBannerIndex(index => (index + 1) % bannerSlides.length), 5500); return () => window.clearInterval(timer); }, [bannerPaused, bannerSlides.length, selectedEvent]);
+  useEffect(() => { if (bannerPaused || bannerSlides.length < 2 || selectedEvent) return; const timer = window.setInterval(() => setBannerIndex(index => (index + 1) % bannerSlides.length), 5000); return () => window.clearInterval(timer); }, [bannerPaused, bannerSlides.length, selectedEvent]);
   const activeBanner = bannerSlides[bannerIndex % Math.max(1, bannerSlides.length)];
   useEffect(() => {
     let active = true;
