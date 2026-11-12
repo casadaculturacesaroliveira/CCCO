@@ -158,3 +158,22 @@ p { text-align: justify; text-justify: inter-word; }
   .ccco-banner-content h2{font-size:clamp(25px,7vw,36px);overflow-wrap:anywhere}
   .ccco-banner-controls{right:5%;bottom:12px}
 }
+
+/* Página de proteção de dados */
+.privacy-page{min-height:100vh;background:var(--paper);color:var(--ink)}
+.privacy-header,.privacy-footer{display:flex;justify-content:space-between;align-items:center;gap:20px;padding:24px 6%;border-bottom:1px solid var(--line);font:12px var(--mono)}
+.privacy-header a,.privacy-footer a{color:inherit;text-decoration:underline;text-underline-offset:4px}
+.privacy-content{max-width:930px;margin:auto;padding:70px 6% 110px}
+.privacy-kicker{font:12px var(--mono);letter-spacing:.12em;color:#66685f}
+.privacy-content h1{font:500 clamp(38px,5.5vw,68px)/1.05 var(--display);letter-spacing:-.05em;margin:22px 0 28px}
+.privacy-content h1 em{font-style:normal;color:#858b72}
+.privacy-lead{font-size:clamp(17px,2vw,21px);line-height:1.65}
+.privacy-note{border-left:3px solid #87975a;padding:15px 20px;background:#eae9e1;margin:35px 0;font-size:14px;line-height:1.7}
+.privacy-content section{padding:28px 0;border-bottom:1px solid var(--line)}
+.privacy-content h2{font:600 clamp(22px,3vw,29px)/1.2 var(--display);margin:0 0 16px}
+.privacy-content section p,.privacy-content li{font-size:15px;line-height:1.85;color:#44483f}
+.privacy-content li{margin-bottom:10px}
+.privacy-content a{color:inherit;text-decoration:underline;text-underline-offset:3px;overflow-wrap:anywhere}
+.privacy-reference{font-size:13px;margin-top:35px}
+.privacy-footer{border-top:1px solid var(--line);border-bottom:0}
+@media(max-width:640px){.privacy-header,.privacy-footer{padding:20px 5%;font-size:10px;flex-wrap:wrap}.privacy-content{padding:45px 5% 70px}.privacy-content section{padding:22px 0}}
