@@ -177,3 +177,6 @@ p { text-align: justify; text-justify: inter-word; }
 .privacy-reference{font-size:13px;margin-top:35px}
 .privacy-footer{border-top:1px solid var(--line);border-bottom:0}
 @media(max-width:640px){.privacy-header,.privacy-footer{padding:20px 5%;font-size:10px;flex-wrap:wrap}.privacy-content{padding:45px 5% 70px}.privacy-content section{padding:22px 0}}
+
+/* Preservar quebras de linha e parágrafos escritos no painel de conteúdos. */
+#espacos .espacos-item p{white-space:pre-line}
