@@ -63,15 +63,16 @@ export async function POST(request: Request) {
       '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;margin:0 0 30px;background:#24211f"><tr><td>'+
       (safeImage(featuredUhf.image_url)?'<a href="'+escape(safeLink(featuredUhf.ticket_url))+'"><img src="'+escape(safeImage(featuredUhf.image_url)!)+'" alt="Concerto UHF" width="520" style="display:block;width:100%;height:auto;border:0"></a>':'')+
       '<div style="padding:25px 24px 28px"><p style="margin:0 0 9px;font:600 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#dfac95">CONCERTO EM DESTAQUE</p><h2 style="margin:0 0 12px;font:normal 43px/1.1 Georgia,serif;color:#fff">UHF</h2><p style="margin:0 0 20px;font:14px/1.6 Arial,sans-serif;color:#f4f2ed">'+escape(dateLabel(featuredUhf.starts_at))+(featuredUhf.location?' · '+escape(featuredUhf.location):'')+'</p><a href="'+escape(safeLink(featuredUhf.ticket_url))+'" style="display:inline-block;background:#f4f2ed;padding:13px 18px;color:#24211f;text-decoration:none;font:600 11px Arial,sans-serif;letter-spacing:1px">COMPRAR BILHETE ↗</a></div></td></tr></table>':'';
-    const eventHtml=upcoming.filter(ev=>ev!==featuredUhf).map((ev,i)=>
-      '<tr><td style="padding:36px 0 40px;border-top:1px solid #d9d7d1">'+
-      '<p style="margin:0 0 17px;font:500 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#7b453e">'+(/\bUHF\b/i.test(ev.title)?'EM DESTAQUE · CONCERTO UHF':'AGENDA &nbsp; / &nbsp; '+String(i+1).padStart(2,"0"))+'</p>'+
-      (safeImage(ev.image_url)?'<a href="'+escape(safeLink(ev.ticket_url))+'"><img src="'+escape(safeImage(ev.image_url)!)+'" alt="'+escape(ev.title)+'" width="520" style="display:block;width:100%;height:auto;border:0;margin:0 0 24px"></a>':'')+
-      '<h2 style="margin:0 0 18px;font:normal 34px/1.13 Georgia,Times New Roman,serif;letter-spacing:-.7px;color:#20201e">'+escape(ev.title)+'</h2>'+
-      '<p style="margin:0 0 14px;font:14px/1.7 Arial,sans-serif;color:#585650">'+escape(dateLabel(ev.starts_at))+(ev.location?' &nbsp;·&nbsp; '+escape(ev.location):'')+'</p>'+
-
-      '<a href="'+escape(safeLink(ev.ticket_url))+'" style="display:inline-block;border-bottom:1px solid #20201e;padding:0 0 5px;color:#20201e;text-decoration:none;font:600 11px/1.5 Arial,sans-serif;letter-spacing:1.4px">COMPRAR BILHETE &nbsp; ↗</a>'+
-      '</td></tr>'
+    const otherEvents=upcoming.filter(ev=>ev!==featuredUhf);
+    const eventCard=(ev:typeof otherEvents[number],i:number)=>
+      '<td width="50%" valign="top" style="width:50%;padding:0 8px 30px;box-sizing:border-box">'+
+      (safeImage(ev.image_url)?'<a href="'+escape(safeLink(ev.ticket_url))+'"><img src="'+escape(safeImage(ev.image_url)!)+'" alt="'+escape(ev.title)+'" width="240" style="display:block;width:100%;height:auto;border:0;margin:0 0 14px"></a>':'')+
+      '<p style="margin:0 0 9px;font:500 10px/1.4 Arial,sans-serif;letter-spacing:1.5px;color:#7b453e">AGENDA / '+String(i+1).padStart(2,"0")+'</p>'+
+      '<h2 style="margin:0 0 12px;font:normal 23px/1.2 Georgia,serif;color:#20201e">'+escape(ev.title)+'</h2>'+
+      '<p style="margin:0 0 15px;font:12px/1.6 Arial,sans-serif;color:#585650">'+escape(dateLabel(ev.starts_at))+(ev.location?' · '+escape(ev.location):'')+'</p>'+
+      '<a href="'+escape(safeLink(ev.ticket_url))+'" style="display:inline-block;border-bottom:1px solid #20201e;padding-bottom:4px;color:#20201e;text-decoration:none;font:600 10px/1.5 Arial,sans-serif;letter-spacing:.7px">COMPRAR BILHETE ↗</a></td>';
+    const eventHtml=Array.from({length:Math.ceil(otherEvents.length/2)},(_,row)=>
+      '<tr>'+eventCard(otherEvents[row*2],row*2)+(otherEvents[row*2+1]?eventCard(otherEvents[row*2+1],row*2+1):'<td width="50%" style="width:50%"></td>')+'</tr>'
     ).join("");
     const mediaHtml=media.map(m=>m.type==="image"?
       '<tr><td style="padding:10px 0 32px"><a href="'+escape(root)+'"><img src="'+escape(m.url)+'" alt="'+escape(m.name)+'" width="520" style="display:block;width:100%;height:auto;border:0"></a><p style="margin:10px 0 0;font:11px/1.5 Arial,sans-serif;color:#77736d">'+escape(m.name)+'</p></td></tr>':
