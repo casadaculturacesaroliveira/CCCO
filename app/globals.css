@@ -139,9 +139,11 @@ p { text-align: justify; text-justify: inter-word; }
 .ccco-banner-art strong{font-size:clamp(65px,11vw,170px);line-height:.83;letter-spacing:-.09em;text-align:right;transform:rotate(-7deg)}
 @media(max-width:640px){.ccco-banner-art{padding:8%;opacity:.5}.ccco-banner-art strong{font-size:clamp(60px,16vw,100px)}}
 
-/* Banner responsivo: imagens inteiras sem recorte, centradas em qualquer dimensão de ecrã. */
+/* Banner adaptativo: imagem completa sem cortes nem distorção em todos os ecrãs. */
+.ccco-banner-image{background:#1b211b}
+.ccco-banner-image img{object-fit:contain;object-position:center}
 @media (max-width:900px){
-  .ccco-banner{position:relative;display:block;height:clamp(340px,43vw,570px);overflow:hidden}
+  .ccco-banner{position:relative;display:block;height:clamp(260px,56.25vw,570px);overflow:hidden}
   .ccco-banner-image{position:absolute;inset:0;width:100%;height:100%;display:block}
   .ccco-banner-image img{width:100%;height:100%;object-fit:contain;object-position:center}
   .ccco-banner-shade{display:block}
@@ -152,9 +154,9 @@ p { text-align: justify; text-justify: inter-word; }
   .ccco-banner-fallback{height:100%}
 }
 @media (max-width:640px){
-  .ccco-banner{height:auto;aspect-ratio:4/3;min-height:300px;max-height:480px}
+  .ccco-banner{height:clamp(230px,65vw,420px)}
   .ccco-banner-content{left:5%;bottom:18%;max-width:85%}
-  .ccco-banner-content h2{font-size:clamp(27px,7vw,42px);overflow-wrap:anywhere}
+  .ccco-banner-content h2{font-size:clamp(24px,6vw,38px);overflow-wrap:anywhere}
   .ccco-banner-controls{right:5%;bottom:4%}
   .ccco-banner-controls button{width:35px;height:35px}
 }
