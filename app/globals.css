@@ -120,7 +120,7 @@ p { text-align: justify; text-justify: inter-word; }
 /* Carrossel de destaques no topo da página */
 .ccco-banner{position:relative;height:clamp(340px,43vw,570px);overflow:hidden;background:#1b211b;color:#fff;isolation:isolate}
 .ccco-banner-image,.ccco-banner-shade{position:absolute;inset:0}
-.ccco-banner-image img{width:100%;height:100%;display:block;object-fit:cover;object-position:center;animation:ccco-banner-enter .5s ease both}
+.ccco-banner-image img{width:100%;height:100%;display:block;object-fit:contain;object-position:center;animation:ccco-banner-enter .5s ease both}
 .ccco-banner-shade{background:linear-gradient(90deg,rgba(8,12,9,.82),rgba(8,12,9,.25) 70%),linear-gradient(0deg,rgba(8,12,9,.4),transparent 55%)}
 .ccco-banner-content{position:absolute;left:8.5%;bottom:12%;max-width:min(650px,72%);z-index:1}
 .ccco-banner-eyebrow{font:11px var(--mono);letter-spacing:.14em;color:var(--acid)}
@@ -139,11 +139,11 @@ p { text-align: justify; text-justify: inter-word; }
 .ccco-banner-art strong{font-size:clamp(65px,11vw,170px);line-height:.83;letter-spacing:-.09em;text-align:right;transform:rotate(-7deg)}
 @media(max-width:640px){.ccco-banner-art{padding:8%;opacity:.5}.ccco-banner-art strong{font-size:clamp(60px,16vw,100px)}}
 
-/* Banner responsivo: mesma composição sobreposta do computador em todos os ecrãs. */
+/* Banner responsivo: imagens inteiras sem recorte, centradas em qualquer dimensão de ecrã. */
 @media (max-width:900px){
   .ccco-banner{position:relative;display:block;height:clamp(340px,43vw,570px);overflow:hidden}
   .ccco-banner-image{position:absolute;inset:0;width:100%;height:100%;display:block}
-  .ccco-banner-image img{width:100%;height:100%;object-fit:cover;object-position:center}
+  .ccco-banner-image img{width:100%;height:100%;object-fit:contain;object-position:center}
   .ccco-banner-shade{display:block}
   .ccco-banner-content{position:absolute;left:8.5%;bottom:12%;width:auto;max-width:min(650px,72%);padding:0;background:transparent}
   .ccco-banner-content h2{font-size:clamp(30px,5vw,60px);margin:18px 0 12px}
@@ -152,7 +152,7 @@ p { text-align: justify; text-justify: inter-word; }
   .ccco-banner-fallback{height:100%}
 }
 @media (max-width:640px){
-  .ccco-banner{height:clamp(340px,90vw,480px)}
+  .ccco-banner{height:auto;aspect-ratio:4/3;min-height:300px;max-height:480px}
   .ccco-banner-content{left:5%;bottom:18%;max-width:85%}
   .ccco-banner-content h2{font-size:clamp(27px,7vw,42px);overflow-wrap:anywhere}
   .ccco-banner-controls{right:5%;bottom:4%}
