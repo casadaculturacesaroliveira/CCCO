@@ -27,8 +27,10 @@ export async function POST(request: Request) {
   if(media.some(m=>{try{const u=new URL(m.url);return u.protocol!=="https:"||u.origin!==mediaOrigin||!u.pathname.startsWith("/storage/v1/object/public/newsletter-media/newsletter/")||m.name.length>180;}catch{return true;}})) return NextResponse.json({error:"Ligação de ficheiro inválida."},{status:400});
   if((!testOnly&&!/^[0-9a-f-]{36}$/i.test(campaignId))||!subject||subject.length>160||intro.length>2000)
     return NextResponse.json({error:"Assunto, mensagem ou campanha inválidos."},{status:400});
-  const {data:events,error:eventError}=await client.from("events").select("title,starts_at,location,ticket_url").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(6);
+  const {data:events,error:eventError}=await client.from("events").select("title,starts_at,location,ticket_url,image_url,description").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(50);
   if(eventError) return NextResponse.json({error:"Não foi possível consultar a programação."},{status:500});
+  const uhfEvent=(events||[]).find(ev=>/\\bUHF\\b/i.test(ev.title));
+  const selectedEvents=[...(uhfEvent?[uhfEvent]:[]),...(events||[]).filter(ev=>ev!==uhfEvent)].slice(0,6);
   if(!testOnly) {
   const {data:subscribers,error:subsError}=await client.from("newsletter_subscribers").select("id,email").not("consent_at","is",null).is("unsubscribed_at",null).order("id",{ascending:true}).limit(1000);
   if(subsError) return NextResponse.json({error:"Confirma que executaste a migração newsletter-campaigns.sql."},{status:500});
@@ -37,11 +39,11 @@ export async function POST(request: Request) {
   const done=new Set((previous||[]).map(x=>String(x.subscriber_id)));
   const remaining=(subscribers||[]).filter(x=>!done.has(String(x.id)));
   const batch=remaining.slice(0,5);
-  return await deliver(batch,events||[],false,remaining.length,(subscribers||[]).length);
+  return await deliver(batch,selectedEvents,false,remaining.length,(subscribers||[]).length);
   }
-  return await deliver([{id:"test-only",email:testEmail}],events||[],true,1,1);
+  return await deliver([{id:"test-only",email:testEmail}],selectedEvents,true,1,1);
 
-  async function deliver(batch:{id:string;email:string}[],eventsList:{title:string;starts_at:string|null;location:string|null;ticket_url:string|null}[],isTest:boolean,remainingCount:number,totalEligible:number) {
+  async function deliver(batch:{id:string;email:string}[],eventsList:{title:string;starts_at:string|null;location:string|null;ticket_url:string|null;image_url:string|null;description:string|null}[],isTest:boolean,remainingCount:number,totalEligible:number) {
   let sent=0,failed=0;
   const escape=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
   const root=(site||"").replace(/\/$/,"");
@@ -55,11 +57,14 @@ export async function POST(request: Request) {
     const issueDate=new Intl.DateTimeFormat("pt-PT",{month:"long",year:"numeric",timeZone:"Europe/Lisbon"}).format(new Date());
     const dateLabel=(value:string|null)=>value?new Date(value).toLocaleString("pt-PT",{timeZone:"Europe/Lisbon",day:"numeric",month:"long",hour:"2-digit",minute:"2-digit"}):"Data a anunciar";
     const safeLink=(value:string|null)=>value&&/^https:\/\//.test(value)?value:root;
+    const safeImage=(value:string|null)=>{if(!value)return null;try{const parsed=new URL(value);return parsed.protocol==="https:"?value:null;}catch{return null;}};
     const eventHtml=upcoming.map((ev,i)=>
       '<tr><td style="padding:36px 0 40px;border-top:1px solid #d9d7d1">'+
-      '<p style="margin:0 0 17px;font:500 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#7b453e">AGENDA &nbsp; / &nbsp; '+String(i+1).padStart(2,"0")+'</p>'+
+      '<p style="margin:0 0 17px;font:500 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#7b453e">'+(/\\bUHF\\b/i.test(ev.title)?'EM DESTAQUE · CONCERTO UHF':'AGENDA &nbsp; / &nbsp; '+String(i+1).padStart(2,"0"))+'</p>'+
+      (safeImage(ev.image_url)?'<a href="'+escape(safeLink(ev.ticket_url))+'"><img src="'+escape(safeImage(ev.image_url)!)+'" alt="'+escape(ev.title)+'" width="520" style="display:block;width:100%;height:auto;border:0;margin:0 0 24px"></a>':'')+
       '<h2 style="margin:0 0 18px;font:normal 34px/1.13 Georgia,Times New Roman,serif;letter-spacing:-.7px;color:#20201e">'+escape(ev.title)+'</h2>'+
-      '<p style="margin:0 0 23px;font:14px/1.7 Arial,sans-serif;color:#585650">'+escape(dateLabel(ev.starts_at))+(ev.location?' &nbsp;·&nbsp; '+escape(ev.location):'')+'</p>'+
+      '<p style="margin:0 0 14px;font:14px/1.7 Arial,sans-serif;color:#585650">'+escape(dateLabel(ev.starts_at))+(ev.location?' &nbsp;·&nbsp; '+escape(ev.location):'')+'</p>'+
+      (ev.description?'<p style="margin:0 0 23px;font:15px/1.75 Arial,sans-serif;color:#484640">'+escape(ev.description.slice(0,320))+'</p>':'')+
       '<a href="'+escape(safeLink(ev.ticket_url))+'" style="display:inline-block;border-bottom:1px solid #20201e;padding:0 0 5px;color:#20201e;text-decoration:none;font:600 11px/1.5 Arial,sans-serif;letter-spacing:1.4px">DESCOBRIR &nbsp; ↗</a>'+
       '</td></tr>'
     ).join("");
