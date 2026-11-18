@@ -29,7 +29,7 @@ export async function POST(request: Request) {
     return NextResponse.json({error:"Assunto, mensagem ou campanha inválidos."},{status:400});
   const {data:events,error:eventError}=await client.from("events").select("title,starts_at,location,ticket_url,image_url,description").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at",{ascending:true}).limit(50);
   if(eventError) return NextResponse.json({error:"Não foi possível consultar a programação."},{status:500});
-  const uhfEvent=(events||[]).find(ev=>/\\bUHF\\b/i.test(ev.title));
+  const uhfEvent=(events||[]).find(ev=>/\bUHF\b/i.test(ev.title));
   const selectedEvents=[...(uhfEvent?[uhfEvent]:[]),...(events||[]).filter(ev=>ev!==uhfEvent)].slice(0,6);
   if(!testOnly) {
   const {data:subscribers,error:subsError}=await client.from("newsletter_subscribers").select("id,email").not("consent_at","is",null).is("unsubscribed_at",null).order("id",{ascending:true}).limit(1000);
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
     const safeImage=(value:string|null)=>{if(!value)return null;try{const parsed=new URL(value);return parsed.protocol==="https:"?value:null;}catch{return null;}};
     const eventHtml=upcoming.map((ev,i)=>
       '<tr><td style="padding:36px 0 40px;border-top:1px solid #d9d7d1">'+
-      '<p style="margin:0 0 17px;font:500 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#7b453e">'+(/\\bUHF\\b/i.test(ev.title)?'EM DESTAQUE · CONCERTO UHF':'AGENDA &nbsp; / &nbsp; '+String(i+1).padStart(2,"0"))+'</p>'+
+      '<p style="margin:0 0 17px;font:500 11px/1.4 Arial,sans-serif;letter-spacing:2px;color:#7b453e">'+(/\bUHF\b/i.test(ev.title)?'EM DESTAQUE · CONCERTO UHF':'AGENDA &nbsp; / &nbsp; '+String(i+1).padStart(2,"0"))+'</p>'+
       (safeImage(ev.image_url)?'<a href="'+escape(safeLink(ev.ticket_url))+'"><img src="'+escape(safeImage(ev.image_url)!)+'" alt="'+escape(ev.title)+'" width="520" style="display:block;width:100%;height:auto;border:0;margin:0 0 24px"></a>':'')+
       '<h2 style="margin:0 0 18px;font:normal 34px/1.13 Georgia,Times New Roman,serif;letter-spacing:-.7px;color:#20201e">'+escape(ev.title)+'</h2>'+
       '<p style="margin:0 0 14px;font:14px/1.7 Arial,sans-serif;color:#585650">'+escape(dateLabel(ev.starts_at))+(ev.location?' &nbsp;·&nbsp; '+escape(ev.location):'')+'</p>'+
