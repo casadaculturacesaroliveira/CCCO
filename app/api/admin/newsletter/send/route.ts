@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   async function deliver(batch:{id:string;email:string}[],eventsList:{title:string;starts_at:string|null;location:string|null;ticket_url:string|null}[],isTest:boolean,remainingCount:number,totalEligible:number) {
   let sent=0,failed=0;
   const escape=(v:string)=>v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
-  const root=site.replace(/\/$/,"");
+  const root=(site||"").replace(/\/$/,"");
   for(const subscriber of batch) {
     if(!isTest){
       const {error:lockError}=await client.from("newsletter_deliveries").insert({campaign_id:campaignId,subscriber_id:subscriber.id,status:"pending"});
