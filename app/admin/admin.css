@@ -13,3 +13,27 @@
 .ccco-news-media-item img,.ccco-news-media-item video{width:100%;height:125px;object-fit:contain;background:#f0f0ec}
 .ccco-news-media-item span{font-size:12px;overflow-wrap:anywhere}
 .ccco-news-media-item button{background:none;border:0;text-align:left;text-decoration:underline;cursor:pointer}
+
+/* Editor de conteúdos — secções claras e edição direta */
+.ccco-content-editor{display:grid;gap:24px;max-width:1050px}
+.ccco-content-intro{padding:28px 32px;background:#19261d;color:#fff;border-radius:14px}
+.ccco-content-intro h2{font-size:clamp(26px,3vw,38px);margin:10px 0}
+.ccco-content-intro p{max-width:720px;color:#e0e7df;line-height:1.65;margin:0}
+.ccco-content-section{padding:28px 32px;background:#fff;border:1px solid #e1e5df;border-radius:14px;box-shadow:0 5px 22px rgba(20,35,20,.04)}
+.ccco-content-section-head{display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid #e7ebe6;padding-bottom:16px;margin-bottom:22px}
+.ccco-content-section-head h3{margin:0;font-size:23px}
+.ccco-content-section-head span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#667467}
+.ccco-content-field{display:grid;gap:10px;margin:18px 0}
+.ccco-content-field label{font-size:13px;font-weight:700;color:#263a2a}
+.ccco-content-field input,.ccco-content-field textarea{width:100%;box-sizing:border-box;padding:14px 16px;border:1px solid #cfd8ce;border-radius:9px;background:#fbfcfa;color:#17251a;font:inherit;line-height:1.65}
+.ccco-content-field textarea{min-height:230px;resize:vertical}
+.ccco-content-field input:focus,.ccco-content-field textarea:focus{outline:2px solid #8aaf82;outline-offset:1px;background:#fff}
+.ccco-content-field .ccco-primary{justify-self:start}
+.ccco-content-hint{font-size:12px;color:#687568;margin:0}
+.ccco-content-save{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.ccco-content-save small{color:#956521}
+.ccco-content-spaces{display:grid;gap:16px}
+.ccco-content-space{border:1px solid #e5eae4;border-radius:10px;padding:18px 20px;background:#fafbf9}
+.ccco-content-space h4{font-size:17px;margin:0 0 12px}
+.ccco-content-space .ccco-content-field textarea{min-height:160px}
+@media(max-width:640px){.ccco-content-intro,.ccco-content-section{padding:20px 17px}.ccco-content-section-head{align-items:flex-start;flex-direction:column}.ccco-content-space{padding:16px 12px}}
