@@ -90,7 +90,7 @@ export default function Home() {
       const href = link.getAttribute("href") || "";
       if (href.startsWith("#")) {
         track("section_navigation", { section: href.slice(1) });
-      } else if (/ticketline\\.pt/i.test(href) || link.closest(".program-card-bottom, .program-modal")) {
+      } else if (href.includes("ticketline.pt") || link.closest(".program-card-bottom, .program-modal")) {
         track("ticket_click", { destination: "ticketing", event_title: link.closest(".program-card, .program-modal")?.querySelector("h2, h3")?.textContent?.slice(0, 100) || "general" });
       } else if (href.startsWith("mailto:")) {
         track("email_click", { location: "website" });
