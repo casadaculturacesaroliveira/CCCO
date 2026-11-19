@@ -16,7 +16,7 @@ export default function Home() {
   const [analytics, setAnalytics] = useState(false);
   const [marketing, setMarketing] = useState(false);
   const [consentChoice, setConsentChoice] = useState<{analytics:boolean;marketing:boolean}|null>(null);
-  const gaId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
+  const gaId = "G-FZYB96P3BE";
   const pixelId = process.env.NEXT_PUBLIC_META_PIXEL_ID;
   const [email, setEmail] = useState("");
   const [newsState, setNewsState] = useState("");
@@ -75,13 +75,43 @@ export default function Home() {
     try { const saved = localStorage.getItem("ccco-cookie-consent"); if (!saved) { setCookieOpen(true); return; } const parsed = JSON.parse(saved); if (typeof parsed.analytics !== "boolean" || typeof parsed.marketing !== "boolean") { setCookieOpen(true); return; } setConsentChoice({analytics:parsed.analytics,marketing:parsed.marketing}); setAnalytics(parsed.analytics); setMarketing(parsed.marketing); } catch { setCookieOpen(true); }
   }, []);
   function consent(allowAnalytics: boolean, allowMarketing: boolean) { const previous = consentChoice; const next = {analytics:allowAnalytics,marketing:allowMarketing}; try { localStorage.setItem("ccco-cookie-consent", JSON.stringify({essential:true,...next,at:new Date().toISOString()})); } catch {} setConsentChoice(next); setAnalytics(allowAnalytics); setMarketing(allowMarketing); setCookieOpen(false); setCookieSettings(false); if (previous && ((previous.analytics && !allowAnalytics) || (previous.marketing && !allowMarketing))) window.location.reload(); }
+  function track(eventName: string, params: Record<string, string> = {}) {
+    if (!consentChoice?.analytics || typeof window === "undefined") return;
+    const gtag = (window as Window & { gtag?: (...args: unknown[]) => void }).gtag;
+    if (typeof gtag === "function") gtag("event", eventName, params);
+  }
+  useEffect(() => {
+    if (!consentChoice?.analytics) return;
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const link = target.closest("a[href]");
+      if (!link) return;
+      const href = link.getAttribute("href") || "";
+      if (href.startsWith("#")) {
+        track("section_navigation", { section: href.slice(1) });
+      } else if (/ticketline\\.pt/i.test(href) || link.closest(".program-card-bottom, .program-modal")) {
+        track("ticket_click", { destination: "ticketing", event_title: link.closest(".program-card, .program-modal")?.querySelector("h2, h3")?.textContent?.slice(0, 100) || "general" });
+      } else if (href.startsWith("mailto:")) {
+        track("email_click", { location: "website" });
+      } else if (/google\\.com\\/maps/.test(href)) {
+        track("directions_click", { location: "website" });
+      } else if (href.startsWith("http")) {
+        track("outbound_click", { destination: new URL(href, window.location.href).hostname });
+      }
+    };
+    document.addEventListener("click", handleClick);
+    return () => document.removeEventListener("click", handleClick);
+  // Consent is the only dependency: listeners are removed on withdrawal.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [consentChoice?.analytics]);
   async function subscribe(e: FormEvent<HTMLFormElement>) {
     e.preventDefault(); setNewsState("A enviar…");
     try {
       const r = await fetch("/api/newsletter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, consent: true }) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Não foi possível subscrever.");
-      setNewsState("Obrigado! A sua inscrição foi registada."); setEmail("");
+      setNewsState("Obrigado! A sua inscrição foi registada."); track("newsletter_signup", { form_name: "newsletter" }); setEmail("");
     } catch (err) { setNewsState(err instanceof Error ? err.message : "Ocorreu um erro."); }
   }
   async function sendContact(e: FormEvent<HTMLFormElement>) {
@@ -92,7 +122,7 @@ export default function Home() {
       const r = await fetch("/api/contact", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
       const d = await r.json();
       if (!r.ok) throw new Error(d.error || "Não foi possível enviar a mensagem.");
-      setContactState("Mensagem enviada. Obrigado pelo contacto."); form.reset();
+      setContactState("Mensagem enviada. Obrigado pelo contacto."); track("contact_form_submit", { form_name: "contact" }); form.reset();
     } catch (err) { setContactState(err instanceof Error ? err.message : "Ocorreu um erro."); }
   }
 
@@ -112,7 +142,7 @@ export default function Home() {
 
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2></div>
       <div className="program-grid">{upcomingEvents.map((ev, i) => <article className="program-card" key={i}>
-        <button type="button" className="program-card-image" onClick={() => setSelectedEvent(ev)} aria-label={"Ver detalhes de "+ev.title+", "+ev.date+" "+ev.month}>{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><span className="program-card-overlay"><strong>{ev.title}</strong><span className="program-card-overlay-date">{ev.date} {ev.month}</span><span className="program-card-overlay-action">Ver detalhes ↗</span></span></button>
+        <button type="button" className="program-card-image" onClick={() => { track("event_details_view", { event_title: ev.title.slice(0, 100), event_category: ev.type }); setSelectedEvent(ev); }} aria-label={"Ver detalhes de "+ev.title+", "+ev.date+" "+ev.month}>{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><span className="program-card-overlay"><strong>{ev.title}</strong><span className="program-card-overlay-date">{ev.date} {ev.month}</span><span className="program-card-overlay-action">Ver detalhes ↗</span></span></button>
         <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Comprar para "+ev.title}>Comprar ↗</a> : <span>Bilhetes em breve</span>}</div></div>
       </article>)}</div>
       <p className="editor-note">A agenda será atualizada com eventos e datas confirmados.</p>
