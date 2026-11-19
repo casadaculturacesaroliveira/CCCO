@@ -94,7 +94,7 @@ export default function Home() {
         track("ticket_click", { destination: "ticketing", event_title: link.closest(".program-card, .program-modal")?.querySelector("h2, h3")?.textContent?.slice(0, 100) || "general" });
       } else if (href.startsWith("mailto:")) {
         track("email_click", { location: "website" });
-      } else if (/google\\.com\\/maps/.test(href)) {
+      } else if (href.includes("google.com/maps")) {
         track("directions_click", { location: "website" });
       } else if (href.startsWith("http")) {
         track("outbound_click", { destination: new URL(href, window.location.href).hostname });
