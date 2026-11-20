@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Proteção de Dados (RGPD) | Casa da Cultura César Oliveira",
   description: "Informação sobre privacidade, dados pessoais, cookies e direitos dos titulares no site da Casa da Cultura César Oliveira.",
+  alternates: { canonical: "/protecao-de-dados" },
 };
 
 export default function ProtecaoDados() {
