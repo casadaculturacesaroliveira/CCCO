@@ -3,7 +3,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { supabaseBrowser } from "../lib/supabase-browser";
 import Script from "next/script";
 
-type ProgramEvent = {date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string;starts_at?:string};
+type ProgramEvent = {id?:string;date:string;month:string;type:string;title:string;desc:string;tag:string;ticket_url?:string;image_url?:string;starts_at?:string};
 const fallbackEvents: ProgramEvent[] = [
   { date: "EM BREVE", month: "—", type: "MÚSICA", title: "Novos encontros, novas histórias", desc: "A próxima programação está a ser preparada. Fique atento às novidades.", tag: "Em atualização" },
   { date: "EM BREVE", month: "—", type: "ARTES PERFORMATIVAS", title: "O palco está à sua espera", desc: "Espetáculos, criação contemporânea e momentos para partilhar.", tag: "Em atualização" },
@@ -51,11 +51,11 @@ export default function Home() {
     let active = true;
     try {
       const db = supabaseBrowser();
-      void db.from("events").select("title,category,description,starts_at,ticket_url,image_url")
+      void db.from("events").select("id,title,category,description,starts_at,ticket_url,image_url")
         .eq("status","published").order("starts_at",{ascending:true}).then(({data,error}) => {
           if (!active || error || !data) return;
           setEvents(data.map(ev => ({
-            date: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{day:"2-digit"}) : "EM BREVE",
+            id: ev.id, date: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{day:"2-digit"}) : "EM BREVE",
             month: ev.starts_at ? new Date(ev.starts_at).toLocaleDateString("pt-PT",{month:"short",year:"numeric"}).toUpperCase() : "—",
             type: ev.category.toUpperCase(), title:ev.title,desc:ev.description,tag:ev.starts_at?"Confirmado":"Em breve",
             ticket_url:ev.ticket_url || "", image_url:ev.image_url || "", starts_at:ev.starts_at || undefined
@@ -143,7 +143,7 @@ export default function Home() {
     <section className="program section-pad" id="programacao"><div className="section-kicker"><span>02 / AGENDA</span><span>O QUE ACONTECE AQUI</span></div><div className="section-heading"><h2>Programação<span className="accent">.</span></h2></div>
       <div className="program-grid">{upcomingEvents.map((ev, i) => <article className="program-card" key={i}>
         <button type="button" className="program-card-image" onClick={() => { track("event_details_view", { event_title: ev.title.slice(0, 100), event_category: ev.type }); setSelectedEvent(ev); }} aria-label={"Ver detalhes de "+ev.title+", "+ev.date+" "+ev.month}>{ev.image_url ? <img src={ev.image_url} alt={"Cartaz do evento "+ev.title} loading="lazy" /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}<span className="program-card-category">{ev.type}</span><span className="program-card-overlay"><strong>{ev.title}</strong><span className="program-card-overlay-date">{ev.date} {ev.month}</span><span className="program-card-overlay-action">Ver detalhes ↗</span></span></button>
-        <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Comprar para "+ev.title}>Comprar ↗</a> : <span>Bilhetes em breve</span>}</div></div>
+        <div className="program-card-info"><span className="program-card-date">{ev.date} {ev.month}</span><h3>{ev.title}</h3><div className="program-card-bottom">{ev.id && <a href={"/eventos/"+ev.id} aria-label={"Página do evento "+ev.title}>Detalhes ↗</a>}{ev.ticket_url ? <a href={ev.ticket_url} target="_blank" rel="noopener noreferrer" aria-label={"Comprar para "+ev.title}>Comprar ↗</a> : <span>Bilhetes em breve</span>}</div></div>
       </article>)}</div>
       <p className="editor-note">A agenda será atualizada com eventos e datas confirmados.</p>
       {selectedEvent && <div className="program-modal-backdrop" onMouseDown={(event) => { if (event.target === event.currentTarget) setSelectedEvent(null); }}><section className="program-modal" role="dialog" aria-modal="true" aria-label={"Detalhes de "+selectedEvent.title}><button type="button" className="program-modal-close" onClick={() => setSelectedEvent(null)} aria-label="Fechar detalhes">×</button><div className="program-modal-poster">{selectedEvent.image_url ? <img src={selectedEvent.image_url} alt={"Cartaz do evento "+selectedEvent.title} /> : <div className="program-card-placeholder" aria-hidden="true"><span>CCCO ✳</span><strong>CULTURA<br/>AO VIVO.</strong></div>}</div><div className="program-modal-content"><span className="program-modal-category">{selectedEvent.type}</span><h2>{selectedEvent.title}</h2><p className="program-modal-date">{selectedEvent.date} {selectedEvent.month}</p><h3>Sinopse</h3><p className="program-modal-description">{selectedEvent.desc || "Sinopse disponível em breve."}</p>{selectedEvent.ticket_url && <a className="program-modal-ticket" href={selectedEvent.ticket_url} target="_blank" rel="noopener noreferrer">Comprar bilhetes ↗</a>}</div></section></div>}
